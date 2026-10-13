@@ -326,6 +326,12 @@ Bocetos de baja fidelidad de las seis pantallas principales, con orden lógico d
 
 Link de visualización de los wireframes: [https://www.figma.com/design/Zilr8kG0HNsNOi57dSwjtS/NexusERP-2.0-%E2%80%94-Wireframes?node-id=0-1&t=6wpZr8AOAvs2AM2i-1](https://www.figma.com/design/Zilr8kG0HNsNOi57dSwjtS/NexusERP-2.0-%E2%80%94-Wireframes?node-id=0-1&t=6wpZr8AOAvs2AM2i-1)
 
+### 13.1 Enlace del maquetado
+
+El maquetado de la interfaz de NexusERP 2.0 puede consultarse en Figma mediante el siguiente enlace:
+
+[Ver maquetado de NexusERP 2.0 en Figma](https://www.figma.com/design/Zilr8kG0HNsNOi57dSwjtS/NexusERP-2.0-%25E2%2580%2594-Wireframes?node-id=39-134&t=NytzZpvVxGgAMKm4-0)
+
 ## 14. DEFINICIÓN DE CONTENIDO (TEXTOS, IMÁGENES, ETC.)
 
 | **Tipo de contenido**    | **Detalle**                                                                   | **Criterio de selección / licencia**                                                             |
