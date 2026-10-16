@@ -1,6 +1,7 @@
 <p align="center">
-  <img src="https://files.catbox.moe/j8squw.png" alt="NEXUX ERP" width="250" />
+  <img src="https://files.catbox.moe/gl4wga.png" alt="NEXUX ERP" width="250" />
 </p>
+
 
 
 Plataforma Web SaaS Multi-Inquilino para la Gestión Integral de CRM, Automatización de Pre-Nómina y Asistente Empresarial Basado en Inteligencia Artificial con Gobernanza de Datos.
