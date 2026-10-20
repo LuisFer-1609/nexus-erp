@@ -4,7 +4,7 @@
 
 
 <div align="center">
-<h1 UNIDAD 1 /h1>
+<h1>UNIDAD 1</h1>
 </div>
 Plataforma Web SaaS Multi-Inquilino para la Gestión Integral de CRM, Automatización de Pre-Nómina y Asistente Empresarial Basado en Inteligencia Artificial con Gobernanza de Datos.
 
@@ -351,5 +351,5 @@ El maquetado de la interfaz de NexusERP 2.0 puede consultarse en Figma mediante 
 | Datos de prueba          | Empresas, empleados y leads ficticios para las demos de cada sprint           | Datos inventados por el equipo; ninguno corresponde a personas reales.                           |
 
 <div align="center">
-<h1 UNIDAD 2 /h1>
+<h1>UNIDAD 2</h1>
 </div>
