@@ -178,6 +178,42 @@ Para mantener el sistema ordenado, seguro y fácil de mantener conforme crezca, 
 | Procesamiento en segundo plano (colas de trabajo)         | Ejecutar tareas que no requieren respuesta inmediata, como el cálculo completo de una pre-nómina o el procesamiento de nuevos leads, sin interrumpir la experiencia del usuario. |
 | Organización por capas (Controlador–Servicio–Repositorio) | Mantener cada módulo del backend estructurado internamente, separando la recepción de solicitudes, la lógica de negocio y el acceso a los datos.                                 |
 
+### 7.5 Diagrama de arquitectura
+
+El sistema es un monolito modular en Laravel con una SPA en Vue.js + Inertia.js como cliente. El módulo de Seguridad valida autenticación, empresa (tenant) y permisos antes de que cualquier solicitud llegue a los demás módulos. Las tareas pesadas se ejecutan en segundo plano mediante colas, y las respuestas del chat de IA se envían en streaming por WebSockets.
+
+```mermaid
+flowchart LR
+    U["Usuario (navegador)"] --> SPA["SPA: Vue.js + Inertia.js"]
+    SPA -->|"HTTP"| SEG
+
+    subgraph MODS["Monolito modular Laravel (app/Modules)"]
+        SEG["Seguridad: login, RBAC y tenant scoping"]
+        CRM["Crm"]
+        NOM["Nomina"]
+        IA["Ia (Fachada)"]
+        SEG --> CRM
+        SEG --> NOM
+        SEG --> IA
+    end
+
+    CRM --> DB[("PostgreSQL + pgvector")]
+    NOM --> DB
+    IA --> DB
+    SEG --> DB
+
+    CRM -->|"Adapter"| META["Meta: Facebook e Instagram"]
+    IA -->|"Adapter"| LLM["API de LLM externa"]
+
+    CRM -->|"Jobs"| Q["Redis + colas de Laravel"]
+    NOM -->|"Jobs"| Q
+    Q --> WK["Workers de Laravel"]
+    WK --> DB
+
+    IA -->|"Tokens de la respuesta"| REV["Laravel Reverb (WebSockets)"]
+    REV -->|"Streaming"| SPA
+```
+
 ## 7. REQUISITOS FUNCIONALES Y NO FUNCIONALES
 
 ### 7.1 Requisitos funcionales
