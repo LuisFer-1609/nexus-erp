@@ -3,7 +3,9 @@
 </p>
 
 
-
+<div align="center">
+<h1>UNIDAD 1</h1>
+</div>
 Plataforma Web SaaS Multi-Inquilino para la Gestión Integral de CRM, Automatización de Pre-Nómina y Asistente Empresarial Basado en Inteligencia Artificial con Gobernanza de Datos.
 
 **Fecha de emisión:** 8 sept 2026
@@ -383,3 +385,7 @@ El maquetado de la interfaz de NexusERP 2.0 puede consultarse en Figma mediante 
 | Tipografía               | Fuente principal de la interfaz                                               | Fuente con licencia abierta (Google Fonts), legible en pantalla.                                 |
 | Imágenes / ilustraciones | Estados vacíos (sin leads, sin empleados) y pantalla de bienvenida            | Bancos de imágenes libres de derechos (unDraw, Storyset) citando la fuente.                      |
 | Datos de prueba          | Empresas, empleados y leads ficticios para las demos de cada sprint           | Datos inventados por el equipo; ninguno corresponde a personas reales.                           |
+
+<div align="center">
+<h1>UNIDAD 2</h1>
+</div>
