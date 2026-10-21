@@ -389,3 +389,62 @@ El maquetado de la interfaz de NexusERP 2.0 puede consultarse en Figma mediante 
 <div align="center">
 <h1>UNIDAD 2</h1>
 </div>
+
+## 1. Flujo de Ramas
+
+Para mantener la estabilidad del software, trabajamos con una jerarquía estricta de ramas:
+
+NexusERP (Main Final)
+Rama principal y estable del proyecto. Almacena la versión final y lista para producción. El equipo puede tomar copias de esta rama cuando sea necesario para iniciar nuevas fases o referencias estables.
+
+NX-VersionSprint-01
+Rama de producción y versión del sprint. En esta rama se consolidan las características funcionales de la versión actual del sprint antes de pasar a producción final.
+
+NX-VersionSprint-test
+Rama destinada exclusivamente a las pruebas de calidad (QA) de la aplicación.
+
+Ramas de Desarrollo Individual
+Siguen la estructura SP01-TareaCorrespondiente - EV, donde SP01 representa el sprint, TareaCorrespondiente la funcionalidad a desarrollar, y EV las iniciales del integrante encargado. Cada integrante del equipo debe crear una copia independiente basada en la rama principal.
+
+## 2. Permisos y Roles de Aprobación
+
+Para garantizar la calidad del código y la seguridad del despliegue, los permisos de revisión y fusión (Merge) están distribuidos de la siguiente manera:
+
+En NexusERP (Main Final), Ángel Castañeda es el único usuario con permisos para enviar a producción final. El equipo completo (@all) puede tomar copias de esta rama estable.
+
+En NX-VersionSprint-01, únicamente Luis Fernando y Ángel Castañeda tienen permiso para aceptar Pull Requests hacia la rama de producción del sprint tras su debida revisión.
+
+En NX-VersionSprint-test, Luis Fernando acepta los Pull Requests individuales para realizar las pruebas de calidad y testeo (QA) de la aplicación.
+
+En las Ramas Individuales, todo el equipo (@all) debe crear sus copias de trabajo individuales basadas en la jerarquía establecida.
+
+## 3. Gestión de Sprints y Planificación
+
+El seguimiento de las tareas, fechas límite y asignaciones se gestionará mediante Trello y el Calendario del equipo.
+
+Es responsabilidad de cada integrante revisar periódicamente el tablero para calcular el avance, estimar tiempos y medir cuántos sprints tomará finalizar los objetivos del proyecto.
+
+## 4. Convención de Commits
+
+Todos los mensajes de commit deben seguir estrictamente la siguiente estructura:
+
+tipo(alcance): Breve descripción del cambio realizado en minúsculas
+
+Ejemplo:
+fix(CRM): Se actualizaron los filtros de los meats.
+
+Tipos de Commits Comunes:
+
+feat (o feature): Una nueva característica o funcionalidad para el usuario.
+
+fix (o bugfix): La solución a un error o bug detectado.
+
+docs: Cambios exclusivos en la documentación, como actualizaciones en este README.
+
+style: Cambios que no afectan la lógica del código, como espacios, formateo o puntos y comas faltantes.
+
+refactor: Un cambio en el código que no corrige un error ni añade una nueva característica, enfocado en mejorar la estructura o legibilidad.
+
+test: Adición de pruebas unitarias o integrales faltantes, o corrección de pruebas existentes.
+
+chore: Cambios en el proceso de construcción, herramientas auxiliares, dependencias o librerías.
