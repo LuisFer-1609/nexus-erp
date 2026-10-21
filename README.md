@@ -390,6 +390,187 @@ El maquetado de la interfaz de NexusERP 2.0 puede consultarse en Figma mediante 
 <h1>UNIDAD 2</h1>
 </div>
 
+# Navegación y flujo del prototipo — NexusERP
+
+## Estructura de navegación
+
+La navegación lateral del sistema se organiza en dos módulos principales: **CRM** y **PRE-NÓMINA**.
+
+### CRM
+
+- **Dashboard**
+  - Vista general del módulo CRM.
+  - Muestra indicadores principales, leads recientes y accesos rápidos.
+
+- **Leads**
+  - Muestra el listado completo de leads.
+  - Permite consultar origen, etapa, prioridad, responsable, última interacción y próxima acción.
+  - Desde la acción **Ver ficha** se accede a la ficha detallada del cliente.
+
+- **Clientes**
+  - Muestra la cartera general de clientes.
+  - Permite consultar información básica, responsable, origen, última interacción y estado.
+  - Desde la acción **Ver cliente** se accede a la ficha detallada del cliente.
+
+- **Asistente IA**
+  - Abre la interfaz del asistente empresarial.
+  - Permite realizar consultas relacionadas con clientes, ventas y personal autorizado.
+
+- **Configuración**
+  - Contiene la configuración relacionada con la empresa y el módulo CRM.
+  - Incluye Empresa, Usuarios y roles e Integraciones con Meta Business.
+
+### PRE-NÓMINA
+
+- **Empleados**
+  - Muestra el directorio de empleados registrados.
+  - Permite consultar área, puesto, contacto, fecha de ingreso, estado y horario.
+
+- **Asistencias**
+  - Muestra el control diario de asistencias.
+  - Incluye entradas, salidas, retardos, faltas y horas extra.
+
+- **Pre-nómina**
+  - Muestra el cálculo previo de nómina.
+  - Incluye percepciones, deducciones, incidencias y neto estimado por empleado.
+
+---
+
+## Flujo de navegación del prototipo
+
+### Acceso al sistema
+
+**Login → Dashboard CRM**
+
+El botón **Ingresar a NexusERP** dirige al usuario directamente al Dashboard del CRM.
+
+Cada usuario pertenece a una sola empresa, por lo que no es necesario seleccionar una empresa durante el inicio de sesión.
+
+---
+
+### Navegación dentro de CRM
+
+**CRM → Dashboard**
+
+Muestra el resumen general del área comercial y los principales indicadores del CRM.
+
+**CRM → Leads**
+
+Abre el listado general de oportunidades comerciales.
+
+**CRM → Leads → Ver ficha → Ficha de cliente**
+
+Desde el listado de leads, el usuario puede seleccionar la acción **Ver ficha** para consultar la información detallada del lead.
+
+**CRM → Clientes**
+
+Abre la cartera general de clientes registrados.
+
+**CRM → Clientes → Ver cliente → Ficha de cliente**
+
+Desde el listado de clientes, la acción **Ver cliente** abre su ficha detallada.
+
+**Ficha de cliente → Breadcrumb CRM / Clientes → Clientes**
+
+El breadcrumb permite regresar desde la ficha individual al listado general de clientes.
+
+**CRM → Asistente IA**
+
+Abre directamente la interfaz del asistente empresarial.
+
+**CRM → Configuración**
+
+Abre la administración de la empresa, usuarios, roles e integraciones.
+
+---
+
+### Navegación dentro de PRE-NÓMINA
+
+**PRE-NÓMINA → Empleados**
+
+Abre el directorio del personal registrado en la empresa.
+
+**PRE-NÓMINA → Asistencias**
+
+Abre el control diario de entradas, salidas, retardos, faltas y horas extra.
+
+**PRE-NÓMINA → Pre-nómina**
+
+Abre el cálculo previo de nómina correspondiente al periodo seleccionado.
+
+---
+
+## Relación entre las vistas
+
+**Acceso**
+
+Login → Dashboard CRM
+
+**CRM**
+
+CRM → Dashboard
+
+CRM → Leads → Ficha de cliente
+
+CRM → Clientes → Ficha de cliente
+
+CRM → Asistente IA
+
+CRM → Configuración
+
+**PRE-NÓMINA**
+
+PRE-NÓMINA → Empleados
+
+PRE-NÓMINA → Asistencias
+
+PRE-NÓMINA → Pre-nómina
+
+---
+
+## Enlaces configurados en el prototipo
+
+En la página **Prototipado** de Figma, las principales acciones utilizan navegación por clic para permitir probar el flujo del sistema.
+
+| Acción | Destino |
+| --- | --- |
+| Ingresar a NexusERP | Dashboard CRM |
+| CRM → Dashboard | Dashboard CRM |
+| CRM → Leads | Leads |
+| CRM → Clientes | Clientes |
+| CRM → Asistente IA | Asistente IA |
+| CRM → Configuración | Configuración |
+| PRE-NÓMINA → Empleados | Empleados |
+| PRE-NÓMINA → Asistencias | Asistencias |
+| PRE-NÓMINA → Pre-nómina | Pre-nómina |
+| Ver ficha desde Leads | Ficha de cliente |
+| Ver cliente desde Clientes | Ficha de cliente |
+| Breadcrumb de Ficha de cliente | Clientes |
+
+---
+
+## Representación del flujo en el maquetado
+
+La página **Maquetado** de Figma contiene una representación visual del flujo de navegación mediante círculos numerados, óvalos descriptivos y flechas.
+
+Estos elementos se utilizan únicamente para documentar el recorrido que puede realizar el usuario y no forman parte de la interfaz final de NexusERP.
+
+## Enlaces de diseño
+
+### Maquetado
+
+El maquetado contiene las vistas finales del sistema, la estructura visual de cada módulo y la representación gráfica del flujo de navegación.
+
+[Ver Maquetado de NexusERP en Figma](https://www.figma.com/design/Zilr8kG0HNsNOi57dSwjtS/NexusERP-2.0-%25E2%2580%2594-Wireframes?node-id=31-133)
+
+### Prototipado
+
+El prototipado contiene las mismas vistas con navegación interactiva mediante clics, permitiendo probar el flujo principal del sistema entre módulos y pantallas.
+
+[Ver Prototipado de NexusERP en Figma](https://www.figma.com/design/Zilr8kG0HNsNOi57dSwjtS/NexusERP-2.0-%25E2%2580%2594-Wireframes?node-id=39-133)
+
+Para probar la navegación, abrir la página **Prototipado** en Figma y ejecutar el modo **Present / Play**.
+
 ## 1. Flujo de Ramas
 
 Para mantener la estabilidad del software, trabajamos con una jerarquía estricta de ramas:
