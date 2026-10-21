@@ -629,3 +629,15 @@ refactor: Un cambio en el código que no corrige un error ni añade una nueva ca
 test: Adición de pruebas unitarias o integrales faltantes, o corrección de pruebas existentes.
 
 chore: Cambios en el proceso de construcción, herramientas auxiliares, dependencias o librerías.
+
+
+
+
+## 5. Diagrama De Entidad Relacion
+https://drive.google.com/file/d/1uBee1hVxAxLycld2SEJiaz5gK6USAcsQ/view?usp=sharing
+
+
+## 5. Diccionario De Datos De Base De Datos
+https://claude.ai/artifact/5vbkpGSJNweekbkWgbBLud
+
+
