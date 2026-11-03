@@ -4,7 +4,6 @@ import {
     Bell,
     Bot,
     Building2,
-    ChevronRight,
     Contact,
     LayoutDashboard,
     Menu,
@@ -17,11 +16,12 @@ import {
     Clock3,
 } from '@lucide/vue';
 import { computed, ref } from 'vue';
+import type { Component } from 'vue';
 
 type NavItem = {
     label: string;
     href: string;
-    icon?: unknown;
+    icon?: Component;
 };
 
 const page = usePage();
