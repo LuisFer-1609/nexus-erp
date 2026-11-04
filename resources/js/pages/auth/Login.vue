@@ -4,19 +4,18 @@ import InputError from '@/components/InputError.vue';
 import PasswordInput from '@/components/PasswordInput.vue';
 import TextLink from '@/components/TextLink.vue';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { register } from '@/routes';
 import { store } from '@/routes/login';
 import { request } from '@/routes/password';
-import PasskeyVerify from '@/components/PasskeyVerify.vue';
 
 defineOptions({
     layout: {
         title: 'Bienvenido de nuevo',
-        description: 'Ingresa tus credenciales para acceder a NexusERP.',
+        description:
+            'Ingresa tus credenciales y selecciona la empresa con la que trabajarás.',
     },
 });
 
@@ -24,6 +23,9 @@ defineProps<{
     status?: string;
     canResetPassword: boolean;
 }>();
+
+const inputClasses =
+    'h-12 rounded-[7px] border-[#e2e8f0] bg-white px-4 text-base text-[#111827] shadow-none placeholder:text-[#94a3b8] focus-visible:border-[#23c6c8] focus-visible:ring-2 focus-visible:ring-[#23c6c8]/15 dark:border-[#e2e8f0] dark:bg-white dark:text-[#111827] dark:placeholder:text-[#94a3b8]';
 </script>
 
 <template>
@@ -31,30 +33,24 @@ defineProps<{
 
     <div
         v-if="status"
-        class="mb-4 rounded-lg border border-emerald-100 bg-emerald-50 px-3 py-2 text-center text-[11px] font-medium text-emerald-700"
+        class="mb-5 rounded-lg bg-[#ecfdf5] px-4 py-3 text-[13px] font-medium text-[#047857]"
     >
         {{ status }}
-    </div>
-
-    <div class="mb-5 [&_button]:w-full [&_button]:rounded-lg [&_button]:border-slate-200 [&_button]:text-[11px]">
-        <PasskeyVerify />
-    </div>
-
-    <div class="relative mb-5 flex items-center">
-        <span class="h-px flex-1 bg-slate-200" />
-        <span class="px-3 text-[9px] font-medium uppercase tracking-[0.12em] text-slate-400">o con contraseña</span>
-        <span class="h-px flex-1 bg-slate-200" />
     </div>
 
     <Form
         v-bind="store.form()"
         :reset-on-success="['password']"
         v-slot="{ errors, processing }"
-        class="flex flex-col gap-5"
+        class="flex flex-col"
     >
-        <div class="grid gap-5">
-            <div class="grid gap-2">
-                <Label for="email" class="text-[11px] font-semibold text-slate-700">Correo electrónico</Label>
+        <div class="space-y-6">
+            <div class="space-y-2">
+                <Label
+                    for="email"
+                    class="text-[13px] font-semibold text-[#111827] dark:text-[#111827]"
+                    >Correo electrónico</Label
+                >
                 <Input
                     id="email"
                     type="email"
@@ -64,18 +60,22 @@ defineProps<{
                     :tabindex="1"
                     autocomplete="email"
                     placeholder="tu@empresa.com"
-                    class="h-10 rounded-lg border-slate-200 bg-slate-50 text-[12px] transition focus-visible:border-[#23c6c8] focus-visible:bg-white focus-visible:ring-[#23c6c8]/15"
+                    :class="inputClasses"
                 />
                 <InputError :message="errors.email" />
             </div>
 
-            <div class="grid gap-2">
+            <div class="space-y-2">
                 <div class="flex items-center justify-between">
-                    <Label for="password" class="text-[11px] font-semibold text-slate-700">Contraseña</Label>
+                    <Label
+                        for="password"
+                        class="text-[13px] font-semibold text-[#111827] dark:text-[#111827]"
+                        >Contraseña</Label
+                    >
                     <TextLink
                         v-if="canResetPassword"
                         :href="request()"
-                        class="text-[10px] font-semibold text-[#139b9e] no-underline transition hover:text-[#0e7f82]"
+                        class="text-xs font-semibold text-[#139b9e] no-underline hover:text-[#0e7f82] dark:text-[#139b9e]"
                         :tabindex="5"
                     >
                         ¿Olvidaste tu contraseña?
@@ -88,22 +88,43 @@ defineProps<{
                     :tabindex="2"
                     autocomplete="current-password"
                     placeholder="Contraseña"
-                    class="h-10 rounded-lg border-slate-200 bg-slate-50 text-[12px]"
+                    :class="inputClasses"
                 />
                 <InputError :message="errors.password" />
             </div>
 
-            <div class="flex items-center justify-between">
-                <Label for="remember" class="flex items-center space-x-2.5 text-[10px] font-medium text-slate-500">
-                    <Checkbox id="remember" name="remember" :tabindex="3" />
-                    <span>Mantener sesión iniciada</span>
-                </Label>
+            <div class="space-y-2">
+                <Label
+                    for="company"
+                    class="text-[13px] font-semibold text-[#111827] dark:text-[#111827]"
+                    >Empresa activa</Label
+                >
+                <div
+                    id="company"
+                    class="flex h-14 items-center rounded-[7px] border border-[#e2e8f0] bg-white px-4 dark:border-[#e2e8f0] dark:bg-white"
+                >
+                    <span
+                        class="flex size-9 shrink-0 items-center justify-center rounded-md bg-[#eff6ff] text-[13px] font-semibold text-[#2563eb]"
+                        >A</span
+                    >
+                    <span class="ml-3 min-w-0 flex-1">
+                        <span
+                            class="block truncate text-sm font-semibold text-[#111827] dark:text-[#111827]"
+                            >Acme Marketing</span
+                        >
+                        <span
+                            class="mt-0.5 block text-xs text-[#64748b] dark:text-[#64748b]"
+                            >Rol: Administrador</span
+                        >
+                    </span>
+                    <span class="text-sm font-medium text-[#64748b]">⌄</span>
+                </div>
             </div>
 
             <Button
                 type="submit"
-                class="mt-1 h-10 w-full rounded-lg bg-[#139b9e] text-[11px] font-semibold text-white shadow-none transition hover:-translate-y-0.5 hover:bg-[#108b8e] hover:shadow-md hover:shadow-cyan-900/10 motion-reduce:transform-none"
-                :tabindex="4"
+                class="h-11 w-full rounded-md bg-[#23c6c8] text-sm font-semibold text-white shadow-none hover:bg-[#1eb1b3] focus-visible:ring-[#23c6c8]/30"
+                :tabindex="3"
                 :disabled="processing"
                 data-test="login-button"
             >
@@ -112,11 +133,15 @@ defineProps<{
             </Button>
         </div>
 
-        <div class="text-center text-[10px] text-slate-400">
+        <p class="mt-5 text-center text-xs text-[#64748b] dark:text-[#64748b]">
             ¿No tienes una cuenta?
-            <TextLink :href="register()" :tabindex="5" class="font-semibold text-[#139b9e]">
-                Registrarse
+            <TextLink
+                :href="register()"
+                :tabindex="4"
+                class="font-semibold text-[#139b9e] no-underline dark:text-[#139b9e]"
+            >
+                Regístrate
             </TextLink>
-        </div>
+        </p>
     </Form>
 </template>

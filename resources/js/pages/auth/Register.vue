@@ -16,24 +16,31 @@ defineProps<{
 
 defineOptions({
     layout: {
-        title: 'Create an account',
-        description: 'Enter your details below to create your account',
+        title: 'Crea tu cuenta',
+        description: 'Ingresa tus datos para comenzar a trabajar con NexusERP.',
     },
 });
+
+const inputClasses =
+    'h-12 rounded-[7px] border-[#e2e8f0] bg-white px-4 text-base text-[#111827] shadow-none placeholder:text-[#94a3b8] focus-visible:border-[#23c6c8] focus-visible:ring-2 focus-visible:ring-[#23c6c8]/15 dark:border-[#e2e8f0] dark:bg-white dark:text-[#111827] dark:placeholder:text-[#94a3b8]';
 </script>
 
 <template>
-    <Head title="Register" />
+    <Head title="Crear cuenta" />
 
     <Form
         v-bind="store.form()"
         :reset-on-success="['password', 'password_confirmation']"
         v-slot="{ errors, processing }"
-        class="flex flex-col gap-6"
+        class="flex flex-col"
     >
-        <div class="grid gap-6">
-            <div class="grid gap-2">
-                <Label for="name">Name</Label>
+        <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <div class="space-y-2 sm:col-span-2">
+                <Label
+                    for="name"
+                    class="text-[13px] font-semibold text-[#111827] dark:text-[#111827]"
+                    >Nombre completo</Label
+                >
                 <Input
                     id="name"
                     type="text"
@@ -42,13 +49,18 @@ defineOptions({
                     :tabindex="1"
                     autocomplete="name"
                     name="name"
-                    placeholder="Full name"
+                    placeholder="Tu nombre"
+                    :class="inputClasses"
                 />
                 <InputError :message="errors.name" />
             </div>
 
-            <div class="grid gap-2">
-                <Label for="email">Email address</Label>
+            <div class="space-y-2 sm:col-span-2">
+                <Label
+                    for="email"
+                    class="text-[13px] font-semibold text-[#111827] dark:text-[#111827]"
+                    >Correo electrónico</Label
+                >
                 <Input
                     id="email"
                     type="email"
@@ -56,59 +68,71 @@ defineOptions({
                     :tabindex="2"
                     autocomplete="email"
                     name="email"
-                    placeholder="email@example.com"
+                    placeholder="tu@empresa.com"
+                    :class="inputClasses"
                 />
                 <InputError :message="errors.email" />
             </div>
 
-            <div class="grid gap-2">
-                <Label for="password">Password</Label>
+            <div class="space-y-2">
+                <Label
+                    for="password"
+                    class="text-[13px] font-semibold text-[#111827] dark:text-[#111827]"
+                    >Contraseña</Label
+                >
                 <PasswordInput
                     id="password"
                     required
                     :tabindex="3"
                     autocomplete="new-password"
                     name="password"
-                    placeholder="Password"
+                    placeholder="Contraseña"
                     :passwordrules="passwordRules"
+                    :class="inputClasses"
                 />
                 <InputError :message="errors.password" />
             </div>
 
-            <div class="grid gap-2">
-                <Label for="password_confirmation">Confirm password</Label>
+            <div class="space-y-2">
+                <Label
+                    for="password_confirmation"
+                    class="text-[13px] font-semibold text-[#111827] dark:text-[#111827]"
+                    >Confirmar contraseña</Label
+                >
                 <PasswordInput
                     id="password_confirmation"
                     required
                     :tabindex="4"
                     autocomplete="new-password"
                     name="password_confirmation"
-                    placeholder="Confirm password"
+                    placeholder="Repite tu contraseña"
                     :passwordrules="passwordRules"
+                    :class="inputClasses"
                 />
                 <InputError :message="errors.password_confirmation" />
             </div>
 
             <Button
                 type="submit"
-                class="mt-2 w-full"
-                tabindex="5"
+                class="mt-1 h-11 w-full rounded-md bg-[#23c6c8] text-sm font-semibold text-white shadow-none hover:bg-[#1eb1b3] focus-visible:ring-[#23c6c8]/30 sm:col-span-2"
+                :tabindex="5"
                 :disabled="processing"
                 data-test="register-user-button"
             >
                 <Spinner v-if="processing" />
-                Create account
+                Crear cuenta
             </Button>
         </div>
 
-        <div class="text-center text-sm text-muted-foreground">
-            Already have an account?
+        <p class="mt-5 text-center text-xs text-[#64748b] dark:text-[#64748b]">
+            ¿Ya tienes una cuenta?
             <TextLink
                 :href="login()"
-                class="underline underline-offset-4"
+                class="font-semibold text-[#139b9e] no-underline dark:text-[#139b9e]"
                 :tabindex="6"
-                >Log in</TextLink
             >
-        </div>
+                Inicia sesión
+            </TextLink>
+        </p>
     </Form>
 </template>
