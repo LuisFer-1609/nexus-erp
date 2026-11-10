@@ -35,13 +35,18 @@ defineProps<{
         {{ status }}
     </div>
 
-    <div class="mb-5 [&_button]:w-full [&_button]:rounded-lg [&_button]:border-slate-200 [&_button]:text-[11px]">
+    <div
+        class="mb-5 [&_button]:w-full [&_button]:rounded-lg [&_button]:border-slate-200 [&_button]:text-[11px]"
+    >
         <PasskeyVerify />
     </div>
 
     <div class="relative mb-5 flex items-center">
         <span class="h-px flex-1 bg-slate-200" />
-        <span class="px-3 text-[9px] font-medium uppercase tracking-[0.12em] text-slate-400">o con contraseña</span>
+        <span
+            class="px-3 text-[9px] font-medium tracking-[0.12em] text-slate-400 uppercase"
+            >o con contraseña</span
+        >
         <span class="h-px flex-1 bg-slate-200" />
     </div>
 
@@ -53,7 +58,11 @@ defineProps<{
     >
         <div class="grid gap-5">
             <div class="grid gap-2">
-                <Label for="email" class="text-[11px] font-semibold text-slate-700">Correo electrónico</Label>
+                <Label
+                    for="email"
+                    class="text-[11px] font-semibold text-slate-700"
+                    >Correo electrónico</Label
+                >
                 <Input
                     id="email"
                     type="email"
@@ -70,7 +79,11 @@ defineProps<{
 
             <div class="grid gap-2">
                 <div class="flex items-center justify-between">
-                    <Label for="password" class="text-[11px] font-semibold text-slate-700">Contraseña</Label>
+                    <Label
+                        for="password"
+                        class="text-[11px] font-semibold text-slate-700"
+                        >Contraseña</Label
+                    >
                     <TextLink
                         v-if="canResetPassword"
                         :href="request()"
@@ -93,7 +106,10 @@ defineProps<{
             </div>
 
             <div class="flex items-center justify-between">
-                <Label for="remember" class="flex items-center space-x-2.5 text-[10px] font-medium text-slate-500">
+                <Label
+                    for="remember"
+                    class="flex items-center space-x-2.5 text-[10px] font-medium text-slate-500"
+                >
                     <Checkbox id="remember" name="remember" :tabindex="3" />
                     <span>Mantener sesión iniciada</span>
                 </Label>
@@ -110,6 +126,6 @@ defineProps<{
                 Ingresar a NexusERP
             </Button>
         </div>
-
     </Form>
 </template>
+
