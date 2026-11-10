@@ -375,7 +375,7 @@ watch(
                     class="mt-5 text-[10px] font-medium text-[#5f7887]"
                     :class="sidebarCollapsed ? 'lg:hidden' : ''"
                 >
-                    NexusERP 2.0
+                    NexusERP
                 </p>
             </div>
         </aside>

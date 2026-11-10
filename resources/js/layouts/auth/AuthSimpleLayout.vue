@@ -106,7 +106,7 @@ defineProps<{
                 </div>
 
                 <p class="mt-auto text-[11px] font-medium text-[#648090]">
-                    NexusERP 2.0 · MVP académico
+                    NexusERP · MVP académico
                 </p>
             </section>
 
