@@ -1,8 +1,8 @@
 <?php
 
-use App\Http\Controllers\CrmController;
+use App\Http\Controllers\crm\CrmController;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\PreNominaController;
+use App\Http\Controllers\preNomina\PreNominaController;
 use Illuminate\Support\Facades\Route;
 
 Route::inertia('/', 'Welcome')->name('home');
