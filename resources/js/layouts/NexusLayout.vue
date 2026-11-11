@@ -203,7 +203,7 @@ watch(
                         Nexus
                     </span>
                     <span
-                        class="text-[11px] font-semibold tracking-[0.08em] text-[#23c6c8]"
+                        class="text-xs font-semibold tracking-[0.08em] text-[#23c6c8]"
                         :class="sidebarCollapsed ? 'lg:hidden' : ''"
                     >
                         ERP
@@ -240,7 +240,7 @@ watch(
             </div>
 
             <div
-                class="px-5 pb-3 text-[10px] font-semibold tracking-[0.16em] text-[#7497ab]"
+                class="px-5 pb-3 text-[11px] font-semibold tracking-[0.16em] text-[#7497ab]"
                 :class="sidebarCollapsed ? 'lg:hidden' : ''"
             >
                 OPERACIÓN
@@ -321,7 +321,7 @@ watch(
                                 v-for="item in section.items"
                                 :key="item.href"
                                 :href="item.href"
-                                class="group relative flex h-[30px] items-center gap-2 rounded-md px-2.5 text-xs transition-all duration-200 motion-reduce:transition-none"
+                                class="group relative flex h-8 items-center gap-2 rounded-md px-2.5 text-[13px] transition-all duration-200 motion-reduce:transition-none"
                                 :class="[
                                     isActive(item.href)
                                         ? 'bg-[#162732] font-semibold text-white'
@@ -364,7 +364,7 @@ watch(
                             aria-label="Abrir menú de usuario"
                         >
                             <span
-                                class="flex size-[34px] shrink-0 items-center justify-center rounded-full bg-[#162732] text-[10px] font-semibold text-[#23c6c8] ring-1 ring-white/5"
+                                class="flex size-[34px] shrink-0 items-center justify-center rounded-full bg-[#162732] text-xs font-semibold text-[#23c6c8] ring-1 ring-white/5"
                             >
                                 {{ initials }}
                             </span>
@@ -373,12 +373,12 @@ watch(
                                 :class="sidebarCollapsed ? 'lg:hidden' : ''"
                             >
                                 <span
-                                    class="block truncate text-xs font-semibold text-white"
+                                    class="block truncate text-[13px] font-semibold text-white"
                                 >
                                     {{ userName }}
                                 </span>
                                 <span
-                                    class="mt-0.5 block truncate text-[10px] text-[#849ba9]"
+                                    class="mt-0.5 block truncate text-xs text-[#849ba9]"
                                 >
                                     {{ companyName }}
                                 </span>
@@ -399,7 +399,7 @@ watch(
                     </DropdownMenuContent>
                 </DropdownMenu>
                 <p
-                    class="mt-5 text-[10px] font-medium text-[#5f7887]"
+                    class="mt-5 text-[11px] font-medium text-[#5f7887]"
                     :class="sidebarCollapsed ? 'lg:hidden' : ''"
                 >
                     NexusERP
@@ -427,11 +427,11 @@ watch(
                     <Building2 class="hidden size-4 text-[#23c6c8] sm:block" />
                     <div class="min-w-0">
                         <p
-                            class="truncate text-[13px] font-semibold text-slate-900"
+                            class="truncate text-sm font-semibold text-slate-900"
                         >
                             {{ companyName }}
                         </p>
-                        <p class="truncate text-[10px] text-slate-500">
+                        <p class="truncate text-xs text-slate-500">
                             Contexto de trabajo
                         </p>
                     </div>
@@ -445,7 +445,7 @@ watch(
                         <input
                             type="search"
                             placeholder="Buscar en NexusERP..."
-                            class="h-9 w-[270px] rounded-lg border border-slate-200 bg-slate-50 pr-3 pl-9 text-[11px] text-slate-700 transition outline-none focus:border-[#23c6c8]/70 focus:bg-white focus:ring-2 focus:ring-[#23c6c8]/10"
+                            class="h-9 w-[270px] rounded-lg border border-slate-200 bg-slate-50 pr-3 pl-9 text-[13px] text-slate-700 transition outline-none focus:border-[#23c6c8]/70 focus:bg-white focus:ring-2 focus:ring-[#23c6c8]/10"
                         />
                     </label>
 
@@ -469,17 +469,17 @@ watch(
                             >
                                 <span class="text-right">
                                     <span
-                                        class="block max-w-28 truncate text-[11px] font-semibold text-slate-900"
+                                        class="block max-w-28 truncate text-[13px] font-semibold text-slate-900"
                                     >
                                         {{ userName }}
                                     </span>
                                     <span
-                                        class="block text-[9px] text-slate-500"
+                                        class="block text-[11px] text-slate-500"
                                         >Usuario</span
                                     >
                                 </span>
                                 <span
-                                    class="flex size-[34px] items-center justify-center rounded-full bg-[#0a161e] text-[10px] font-semibold text-white"
+                                    class="flex size-[34px] items-center justify-center rounded-full bg-[#0a161e] text-xs font-semibold text-white"
                                 >
                                     {{ initials }}
                                 </span>
