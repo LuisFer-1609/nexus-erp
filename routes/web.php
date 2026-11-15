@@ -22,6 +22,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/', [PreNominaController::class, 'index'])->name('index');
         Route::get('empleados', [PreNominaController::class, 'empleados'])->name('empleados');
         Route::get('asistencias', [PreNominaController::class, 'asistencias'])->name('asistencias');
+        Route::put('empleados/{employee}/horarios/{workSchedule}', [PreNominaController::class, 'updateSchedule'])->name('horarios.update');
     });
 });
 
