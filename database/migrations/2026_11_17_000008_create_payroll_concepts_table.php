@@ -25,7 +25,6 @@ return new class extends Migration
             $table->integer('updated_user_id')->nullable();
             $table->dateTime('deleted_at')->nullable();
             $table->integer('deleted_user_id')->nullable();
-            $table->primary(['id']);
             $table->index(['company_id'], 'fk_payroll_concepts_company');
             $table->index(['payroll_concept_type_id'], 'fk_payroll_concepts_type');
             $table->foreign('company_id', 'fk_payroll_concepts_company')->references('id')->on('companies');

@@ -28,7 +28,6 @@ return new class extends Migration
             $table->integer('updated_user_id')->nullable();
             $table->dateTime('deleted_at')->nullable();
             $table->integer('deleted_user_id')->nullable();
-            $table->primary(['id']);
             $table->index(['lead_id'], 'fk_tasks_lead');
             $table->index(['customer_id'], 'fk_tasks_customer');
             $table->index(['assigned_user_id'], 'fk_tasks_assigned');
