@@ -64,24 +64,6 @@ return [
             ]) : [],
         ],
 
-        // Base del ERP (tablas de nexuserp.sql). Separada de la base de autenticación de Laravel.
-        'erp' => [
-            'driver' => 'mysql',
-            'url' => null,
-            'host' => env('DB_HOST', '127.0.0.1'),
-            'port' => env('DB_PORT', '3306'),
-            'database' => env('ERP_DB_DATABASE', 'nexuserp'),
-            'username' => env('DB_USERNAME', 'root'),
-            'password' => env('DB_PASSWORD', ''),
-            'unix_socket' => env('DB_SOCKET', ''),
-            'charset' => env('DB_CHARSET', 'utf8mb4'),
-            'collation' => env('DB_COLLATION', 'utf8mb4_unicode_ci'),
-            'prefix' => '',
-            'prefix_indexes' => true,
-            'strict' => true,
-            'engine' => null,
-        ],
-
         'mariadb' => [
             'driver' => 'mariadb',
             'url' => env('DB_URL'),
