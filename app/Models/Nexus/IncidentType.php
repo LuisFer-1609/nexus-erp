@@ -9,8 +9,6 @@ use Illuminate\Database\Eloquent\Model;
  */
 class IncidentType extends Model
 {
-    protected $connection = 'erp';
-
     /** Nombre de la tabla. */
     public const TABLE = 'incident_types';
 
