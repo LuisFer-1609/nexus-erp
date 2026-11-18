@@ -19,6 +19,13 @@ import {
     X,
 } from '@lucide/vue';
 import { computed, onMounted, ref, watch } from 'vue';
+import UserMenuContent from '@/components/UserMenuContent.vue';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import type { User } from '@/types';
 import type { Component } from 'vue';
 
 type NavItem = {
@@ -43,9 +50,7 @@ const expandedSections = ref<Record<NavSection['key'], boolean>>({
     payroll: true,
 });
 
-const user = computed(
-    () => page.props.auth?.user as { name?: string } | undefined,
-);
+const user = computed(() => page.props.auth.user as User);
 const userName = computed(() => user.value?.name || 'Usuario');
 const initials = computed(() =>
     userName.value
@@ -198,7 +203,7 @@ watch(
                         Nexus
                     </span>
                     <span
-                        class="text-[11px] font-semibold tracking-[0.08em] text-[#23c6c8]"
+                        class="text-xs font-semibold tracking-[0.08em] text-[#23c6c8]"
                         :class="sidebarCollapsed ? 'lg:hidden' : ''"
                     >
                         ERP
@@ -235,7 +240,7 @@ watch(
             </div>
 
             <div
-                class="px-5 pb-3 text-[10px] font-semibold tracking-[0.16em] text-[#7497ab]"
+                class="px-5 pb-3 text-[11px] font-semibold tracking-[0.16em] text-[#7497ab]"
                 :class="sidebarCollapsed ? 'lg:hidden' : ''"
             >
                 OPERACIÓN
@@ -316,7 +321,7 @@ watch(
                                 v-for="item in section.items"
                                 :key="item.href"
                                 :href="item.href"
-                                class="group relative flex h-[30px] items-center gap-2 rounded-md px-2.5 text-xs transition-all duration-200 motion-reduce:transition-none"
+                                class="group relative flex h-8 items-center gap-2 rounded-md px-2.5 text-[13px] transition-all duration-200 motion-reduce:transition-none"
                                 :class="[
                                     isActive(item.href)
                                         ? 'bg-[#162732] font-semibold text-white'
@@ -350,29 +355,51 @@ watch(
                 class="border-t border-[#22333e] py-6"
                 :class="sidebarCollapsed ? 'mx-[18px] lg:mx-2' : 'mx-[18px]'"
             >
-                <div
-                    class="flex items-center gap-2.5"
-                    :class="sidebarCollapsed ? 'lg:justify-center' : ''"
-                >
-                    <div
-                        class="flex size-[34px] shrink-0 items-center justify-center rounded-full bg-[#162732] text-[10px] font-semibold text-[#23c6c8] ring-1 ring-white/5"
+                <DropdownMenu>
+                    <DropdownMenuTrigger as-child>
+                        <button
+                            type="button"
+                            class="flex w-full items-center gap-2.5 rounded-lg p-1.5 text-left transition-colors hover:bg-white/[0.06] focus-visible:ring-2 focus-visible:ring-[#23c6c8]/70 focus-visible:outline-none"
+                            :class="sidebarCollapsed ? 'lg:justify-center' : ''"
+                            aria-label="Abrir menú de usuario"
+                        >
+                            <span
+                                class="flex size-[34px] shrink-0 items-center justify-center rounded-full bg-[#162732] text-xs font-semibold text-[#23c6c8] ring-1 ring-white/5"
+                            >
+                                {{ initials }}
+                            </span>
+                            <span
+                                class="min-w-0 flex-1"
+                                :class="sidebarCollapsed ? 'lg:hidden' : ''"
+                            >
+                                <span
+                                    class="block truncate text-[13px] font-semibold text-white"
+                                >
+                                    {{ userName }}
+                                </span>
+                                <span
+                                    class="mt-0.5 block truncate text-xs text-[#849ba9]"
+                                >
+                                    {{ companyName }}
+                                </span>
+                            </span>
+                            <ChevronDown
+                                class="size-3.5 shrink-0 text-[#849ba9]"
+                                :class="sidebarCollapsed ? 'lg:hidden' : ''"
+                            />
+                        </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent
+                        class="min-w-60"
+                        :side="sidebarCollapsed ? 'right' : 'top'"
+                        align="end"
+                        :side-offset="8"
                     >
-                        {{ initials }}
-                    </div>
-                    <div
-                        class="min-w-0"
-                        :class="sidebarCollapsed ? 'lg:hidden' : ''"
-                    >
-                        <p class="truncate text-xs font-semibold text-white">
-                            {{ userName }}
-                        </p>
-                        <p class="mt-0.5 truncate text-[10px] text-[#849ba9]">
-                            {{ companyName }}
-                        </p>
-                    </div>
-                </div>
+                        <UserMenuContent :user="user" />
+                    </DropdownMenuContent>
+                </DropdownMenu>
                 <p
-                    class="mt-5 text-[10px] font-medium text-[#5f7887]"
+                    class="mt-5 text-[11px] font-medium text-[#5f7887]"
                     :class="sidebarCollapsed ? 'lg:hidden' : ''"
                 >
                     NexusERP
@@ -400,11 +427,11 @@ watch(
                     <Building2 class="hidden size-4 text-[#23c6c8] sm:block" />
                     <div class="min-w-0">
                         <p
-                            class="truncate text-[13px] font-semibold text-slate-900"
+                            class="truncate text-sm font-semibold text-slate-900"
                         >
                             {{ companyName }}
                         </p>
-                        <p class="truncate text-[10px] text-slate-500">
+                        <p class="truncate text-xs text-slate-500">
                             Contexto de trabajo
                         </p>
                     </div>
@@ -418,7 +445,7 @@ watch(
                         <input
                             type="search"
                             placeholder="Buscar en NexusERP..."
-                            class="h-9 w-[270px] rounded-lg border border-slate-200 bg-slate-50 pr-3 pl-9 text-[11px] text-slate-700 transition outline-none focus:border-[#23c6c8]/70 focus:bg-white focus:ring-2 focus:ring-[#23c6c8]/10"
+                            class="h-9 w-[270px] rounded-lg border border-slate-200 bg-slate-50 pr-3 pl-9 text-[13px] text-slate-700 transition outline-none focus:border-[#23c6c8]/70 focus:bg-white focus:ring-2 focus:ring-[#23c6c8]/10"
                         />
                     </label>
 
@@ -433,21 +460,40 @@ watch(
                         />
                     </button>
 
-                    <div class="hidden items-center gap-2 sm:flex">
-                        <div class="text-right">
-                            <p
-                                class="max-w-28 truncate text-[11px] font-semibold text-slate-900"
+                    <DropdownMenu>
+                        <DropdownMenuTrigger as-child>
+                            <button
+                                type="button"
+                                class="hidden items-center gap-2 rounded-lg px-1.5 py-1 text-left transition-colors hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-[#23c6c8]/40 focus-visible:outline-none sm:flex"
+                                aria-label="Abrir menú de usuario"
                             >
-                                {{ userName }}
-                            </p>
-                            <p class="text-[9px] text-slate-500">Usuario</p>
-                        </div>
-                        <div
-                            class="flex size-[34px] items-center justify-center rounded-full bg-[#0a161e] text-[10px] font-semibold text-white"
+                                <span class="text-right">
+                                    <span
+                                        class="block max-w-28 truncate text-[13px] font-semibold text-slate-900"
+                                    >
+                                        {{ userName }}
+                                    </span>
+                                    <span
+                                        class="block text-[11px] text-slate-500"
+                                        >Usuario</span
+                                    >
+                                </span>
+                                <span
+                                    class="flex size-[34px] items-center justify-center rounded-full bg-[#0a161e] text-xs font-semibold text-white"
+                                >
+                                    {{ initials }}
+                                </span>
+                                <ChevronDown class="size-3.5 text-slate-400" />
+                            </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent
+                            class="min-w-60"
+                            align="end"
+                            :side-offset="8"
                         >
-                            {{ initials }}
-                        </div>
-                    </div>
+                            <UserMenuContent :user="user" />
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 </div>
             </header>
 
