@@ -9,8 +9,6 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Activity extends Model
 {
-    protected $connection = 'erp';
-
     /** Nombre de la tabla. */
     public const TABLE = 'activities';
 
