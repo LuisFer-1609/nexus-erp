@@ -1,18 +1,18 @@
 <script setup lang="ts">
-import { Head, router } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
 import { CalendarDays, Check, Clock3, Pencil, Save, Settings2, Users, X } from '@lucide/vue';
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import NexusBadge from '@/components/nexus/NexusBadge.vue';
 import NexusPageHeader from '@/components/nexus/NexusPageHeader.vue';
 
 type DayKey = 'lunes' | 'martes' | 'miércoles' | 'jueves' | 'viernes' | 'sábado' | 'domingo';
-type AttendanceStatus = 'A tiempo' | 'Retardo' | 'Falta';
+type AttendanceStatus = 'A tiempo' | 'Retardo' | 'Falta' | 'Descanso';
 type Schedule = { enabled: boolean; start: string; end: string };
 type Attendance = { id: number; employee: string; date: string; checkIn: string | null; checkOut: string | null; scheduleStart: string; scheduleEnd: string; delayMinutes: number; overtimeMinutes: number; status: AttendanceStatus };
 type WorkSchedule = { id: number; day_of_week: number; start_time: string | null; end_time: string | null; is_day_off: boolean };
 type EmployeeSchedule = { id: number; employee_number: string; first_name: string; last_name: string; work_schedules: WorkSchedule[] };
 
-const props = defineProps<{ employees: EmployeeSchedule[] }>();
+const props = defineProps<{ employees: EmployeeSchedule[]; attendances: Attendance[]; filters: { date: string; employee_id: number | null } }>();
 
 const days: { key: DayKey; label: string }[] = [
     { key: 'lunes', label: 'Lunes' }, { key: 'martes', label: 'Martes' }, { key: 'miércoles', label: 'Miércoles' },
@@ -30,11 +30,11 @@ const defaultAttendance: Attendance[] = [
 ];
 
 const activeTab = ref<'attendance' | 'schedules'>('attendance');
-const selectedDate = ref('2026-11-10');
-const employeeFilter = ref('Todos los empleados');
+const selectedDate = ref(props.filters.date);
+const employeeFilter = ref<number | 'all'>(props.filters.employee_id ?? 'all');
 const statusFilter = ref('Todos los estados');
 const schedules = ref<Record<DayKey, Schedule>>(structuredClone(defaultSchedules));
-const attendance = ref<Attendance[]>(structuredClone(defaultAttendance));
+const attendance = ref<Attendance[]>(props.attendances);
 const editing = ref<Attendance | null>(null);
 const editingSchedule = ref<WorkSchedule | null>(null);
 const savedMessage = ref('');
@@ -44,19 +44,21 @@ const employees = computed(() => [...new Set(attendance.value.map((row) => row.e
 const selectedScheduleEmployee = computed(() => props.employees.find((employee) => employee.id === selectedScheduleEmployeeId.value));
 const selectedEmployeeSchedules = computed(() => new Map(selectedScheduleEmployee.value?.work_schedules.map((schedule) => [schedule.day_of_week, schedule]) ?? []));
 const selectedSchedule = computed(() => selectedEmployeeSchedules.value.get(selectedScheduleDay.value));
-const filteredAttendance = computed(() => attendance.value.filter((row) => row.date === selectedDate.value && (employeeFilter.value === 'Todos los empleados' || row.employee === employeeFilter.value) && (statusFilter.value === 'Todos los estados' || row.status === statusFilter.value)));
+const filteredAttendance = computed(() => attendance.value.filter((row) => statusFilter.value === 'Todos los estados' || row.status === statusFilter.value));
 const summary = computed(() => ({ present: filteredAttendance.value.filter((row) => row.status !== 'Falta').length, delays: filteredAttendance.value.filter((row) => row.delayMinutes > 0).length, overtime: filteredAttendance.value.filter((row) => row.overtimeMinutes > 0).length, absences: filteredAttendance.value.filter((row) => row.status === 'Falta').length }));
 const minutesBetween = (from: string, to: string): number => { const [fh, fm] = from.split(':').map(Number); const [th, tm] = to.split(':').map(Number); return th * 60 + tm - (fh * 60 + fm); };
 const formatMinutes = (minutes: number): string => minutes > 0 ? `${minutes} min` : '—';
-const statusTone = (status: AttendanceStatus): 'green' | 'amber' | 'red' => ({ 'A tiempo': 'green', Retardo: 'amber', Falta: 'red' }[status]);
-const openEditor = (row: Attendance): void => { editing.value = { ...row }; savedMessage.value = ''; };
+const statusTone = (status: AttendanceStatus): 'green' | 'amber' | 'red' | 'slate' => ({ 'A tiempo': 'green', Retardo: 'amber', Falta: 'red', Descanso: 'slate' }[status]);
+const openEditor = (row: Attendance): void => { router.visit(`/pre-nomina/asistencias/${row.id}`); };
 const updateCalculatedFields = (): void => { if (!editing.value) return; const row = editing.value; row.delayMinutes = row.checkIn ? Math.max(0, minutesBetween(row.scheduleStart, row.checkIn)) : 0; row.overtimeMinutes = row.checkOut ? Math.max(0, minutesBetween(row.scheduleEnd, row.checkOut)) : 0; row.status = row.checkIn ? (row.delayMinutes > 0 ? 'Retardo' : 'A tiempo') : 'Falta'; };
-const saveCorrection = (): void => { if (!editing.value) return; updateCalculatedFields(); const index = attendance.value.findIndex((row) => row.id === editing.value?.id); if (index !== -1) attendance.value[index] = { ...editing.value }; localStorage.setItem('nexus-attendance', JSON.stringify(attendance.value)); savedMessage.value = 'Corrección guardada'; editing.value = null; };
+const saveCorrection = (): void => { if (!editing.value) return; router.put(`/pre-nomina/asistencias/${editing.value.id}`, { check_in: editing.value.checkIn || null, check_out: editing.value.checkOut || null }, { preserveScroll: true, onSuccess: () => { savedMessage.value = 'Corrección guardada'; editing.value = null; } }); };
 const saveSchedules = (): void => { localStorage.setItem('nexus-schedules', JSON.stringify(schedules.value)); savedMessage.value = 'Horarios guardados'; window.setTimeout(() => { savedMessage.value = ''; }, 2500); };
 const openScheduleEditor = (schedule: WorkSchedule): void => { editingSchedule.value = { ...schedule, start_time: schedule.start_time?.slice(0, 5) ?? null, end_time: schedule.end_time?.slice(0, 5) ?? null }; savedMessage.value = ''; };
 const openSelectedScheduleEditor = (): void => { if (selectedSchedule.value) openScheduleEditor(selectedSchedule.value); };
 const saveSchedule = (): void => { if (!editingSchedule.value || selectedScheduleEmployeeId.value === null) return; router.put(`/pre-nomina/empleados/${selectedScheduleEmployeeId.value}/horarios/${editingSchedule.value.id}`, { day_of_week: editingSchedule.value.day_of_week, start_time: editingSchedule.value.start_time, end_time: editingSchedule.value.end_time, is_day_off: editingSchedule.value.is_day_off }, { preserveScroll: true, onSuccess: () => { savedMessage.value = 'Horario actualizado'; editingSchedule.value = null; } }); };
-onMounted(() => { const storedSchedules = localStorage.getItem('nexus-schedules'); const storedAttendance = localStorage.getItem('nexus-attendance'); if (storedSchedules) schedules.value = { ...structuredClone(defaultSchedules), ...JSON.parse(storedSchedules) }; if (storedAttendance) attendance.value = JSON.parse(storedAttendance) as Attendance[]; });
+const applyAttendanceFilters = (): void => { router.get('/pre-nomina/asistencias', { date: selectedDate.value, employee_id: employeeFilter.value === 'all' ? undefined : employeeFilter.value }, { preserveState: true, preserveScroll: true, replace: true }); };
+onMounted(() => { const storedSchedules = localStorage.getItem('nexus-schedules'); if (storedSchedules) schedules.value = { ...structuredClone(defaultSchedules), ...JSON.parse(storedSchedules) }; });
+watch(() => props.attendances, (records) => { attendance.value = records; });
 </script>
 
 <template>
@@ -73,7 +75,7 @@ onMounted(() => { const storedSchedules = localStorage.getItem('nexus-schedules'
             <div v-for="card in [{ label: 'Personal con registro', value: summary.present, icon: Users, tone: 'text-[#139b9e]' }, { label: 'Retardos', value: summary.delays, icon: Clock3, tone: 'text-amber-600' }, { label: 'Horas extra', value: summary.overtime, icon: CalendarDays, tone: 'text-blue-600' }, { label: 'Faltas', value: summary.absences, icon: X, tone: 'text-rose-600' }]" :key="card.label" class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm shadow-slate-200/30"><div class="flex items-center justify-between"><p class="text-[11px] font-medium text-slate-500">{{ card.label }}</p><component :is="card.icon" class="size-4" :class="card.tone" /></div><p class="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{{ card.value }}</p></div>
         </section>
         <section class="rounded-xl border border-slate-200 bg-white shadow-sm shadow-slate-200/30">
-            <div class="flex flex-col gap-3 border-b border-slate-100 p-4 md:flex-row md:items-end md:justify-between"><div><h2 class="text-sm font-semibold text-slate-900">Registro diario</h2><p class="mt-1 text-xs text-slate-500">Los minutos se calculan a partir del horario asignado.</p></div><div class="grid gap-2 sm:grid-cols-3"><label class="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Fecha<input v-model="selectedDate" type="date" class="mt-1 block h-9 rounded-lg border border-slate-200 px-2 text-xs text-slate-700 outline-none focus:border-[#23c6c8]" /></label><label class="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Empleado<select v-model="employeeFilter" class="mt-1 block h-9 rounded-lg border border-slate-200 px-2 text-xs text-slate-700 outline-none focus:border-[#23c6c8]"><option>Todos los empleados</option><option v-for="employee in employees" :key="employee">{{ employee }}</option></select></label><label class="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Estado<select v-model="statusFilter" class="mt-1 block h-9 rounded-lg border border-slate-200 px-2 text-xs text-slate-700 outline-none focus:border-[#23c6c8]"><option>Todos los estados</option><option>A tiempo</option><option>Retardo</option><option>Falta</option></select></label></div></div>
+            <div class="flex flex-col gap-3 border-b border-slate-100 p-4 md:flex-row md:items-end md:justify-between"><div><h2 class="text-sm font-semibold text-slate-900">Registro diario</h2><p class="mt-1 text-xs text-slate-500">Los minutos se calculan a partir del horario asignado.</p></div><div class="grid gap-2 sm:grid-cols-3"><label class="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Fecha<input v-model="selectedDate" type="date" class="mt-1 block h-9 rounded-lg border border-slate-200 px-2 text-xs text-slate-700 outline-none focus:border-[#23c6c8]" @change="applyAttendanceFilters" /></label><label class="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Empleado<select v-model="employeeFilter" class="mt-1 block h-9 rounded-lg border border-slate-200 px-2 text-xs text-slate-700 outline-none focus:border-[#23c6c8]" @change="applyAttendanceFilters"><option value="all">Todos los empleados</option><option v-for="employee in props.employees" :key="employee.id" :value="employee.id">{{ employee.first_name }} {{ employee.last_name }}</option></select></label><label class="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Estado<select v-model="statusFilter" class="mt-1 block h-9 rounded-lg border border-slate-200 px-2 text-xs text-slate-700 outline-none focus:border-[#23c6c8]"><option>Todos los estados</option><option>A tiempo</option><option>Retardo</option><option>Falta</option><option>Descanso</option></select></label></div></div>
             <div class="overflow-x-auto"><table class="w-full min-w-[850px] text-left text-xs"><thead class="bg-slate-50 text-[10px] uppercase tracking-wide text-slate-500"><tr><th class="px-4 py-3 font-semibold">Empleado</th><th class="px-4 py-3 font-semibold">Horario esperado</th><th class="px-4 py-3 font-semibold">Entrada real</th><th class="px-4 py-3 font-semibold">Salida real</th><th class="px-4 py-3 font-semibold">Retardo</th><th class="px-4 py-3 font-semibold">Horas extra</th><th class="px-4 py-3 font-semibold">Estado</th><th class="px-4 py-3"></th></tr></thead><tbody class="divide-y divide-slate-100"><tr v-for="row in filteredAttendance" :key="row.id" class="hover:bg-slate-50/70"><td class="px-4 py-3 font-semibold text-slate-800">{{ row.employee }}</td><td class="px-4 py-3 text-slate-500">{{ row.scheduleStart }} — {{ row.scheduleEnd }}</td><td class="px-4 py-3 font-medium text-slate-700">{{ row.checkIn || '—' }}</td><td class="px-4 py-3 font-medium text-slate-700">{{ row.checkOut || '—' }}</td><td class="px-4 py-3" :class="row.delayMinutes ? 'font-semibold text-amber-700' : 'text-slate-400'">{{ formatMinutes(row.delayMinutes) }}</td><td class="px-4 py-3" :class="row.overtimeMinutes ? 'font-semibold text-blue-700' : 'text-slate-400'">{{ formatMinutes(row.overtimeMinutes) }}</td><td class="px-4 py-3"><NexusBadge :label="row.status" :tone="statusTone(row.status)" /></td><td class="px-4 py-3 text-right"><button type="button" class="inline-flex items-center gap-1 rounded-md px-2 py-1.5 text-[11px] font-semibold text-slate-600 hover:bg-slate-100" @click="openEditor(row)"><Pencil class="size-3.5" /> Corregir</button></td></tr><tr v-if="!filteredAttendance.length"><td colspan="8" class="px-4 py-12 text-center text-sm text-slate-500">No hay registros para los filtros seleccionados.</td></tr></tbody></table></div>
         </section>
     </template>
