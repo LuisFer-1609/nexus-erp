@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Contracts\Crm\Meta\MetaClient;
+use App\Infrastructure\Crm\Meta\GraphMetaAdapter;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -15,7 +17,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->bind(MetaClient::class, GraphMetaAdapter::class);
     }
 
     /**

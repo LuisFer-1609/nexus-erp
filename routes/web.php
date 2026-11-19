@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\crm\CrmController;
+use App\Http\Controllers\crm\MetaReadController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\preNomina\PreNominaController;
 use Illuminate\Support\Facades\Route;
@@ -11,6 +12,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::prefix('crm')->name('crm.')->group(function () {
+        Route::get('meta/ad-accounts', [MetaReadController::class, 'adAccounts'])->name('meta.ad-accounts.index');
         Route::get('leads', [CrmController::class, 'leads'])->name('leads');
         Route::get('clientes', [CrmController::class, 'clientes'])->name('clientes');
         Route::get('clientes/{cliente}', [CrmController::class, 'cliente'])->name('clientes.show');

@@ -14,6 +14,12 @@ return [
     |
     */
 
+    'meta' => [
+        'url' => env('META_GRAPH_URL', 'https://graph.facebook.com'),
+        'version' => env('META_GRAPH_VERSION', 'v27.0'),
+        'access_token' => env('META_ACCESS_TOKEN'),
+    ],
+
     'postmark' => [
         'key' => env('POSTMARK_API_KEY'),
     ],
