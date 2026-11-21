@@ -33,11 +33,14 @@ class PreNominaController extends Controller
     public function index(Request $request): Response
     {
         $rawPeriod = $request->query('period');
-        $periodId = is_string($rawPeriod) ? $rawPeriod : null;
+        $periodId = is_string($rawPeriod) && $rawPeriod !== '' ? $rawPeriod : null;
+
+        $rawFreq = $request->query('frequency');
+        $frequency = is_string($rawFreq) && $rawFreq !== '' ? $rawFreq : null;
 
         return Inertia::render(
             'preNomina/PreNomina',
-            $this->preNominaService->getPayrollData($periodId),
+            $this->preNominaService->getPayrollData($periodId, $frequency),
         );
     }
 }
