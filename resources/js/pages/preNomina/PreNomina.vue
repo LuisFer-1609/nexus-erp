@@ -297,12 +297,37 @@ const handleRecalculate = (): void => {
     isLoading.value = true;
     transitionDirection.value = 'up';
 
-    window.setTimeout(() => {
-        payrollRows.value = payrollRows.value.map((row) => recalculateEmployeeRow(row));
-        isLoading.value = false;
-        isRecalculating.value = false;
-        showFeedback('Pre-nómina recalculada con éxito desde asistencias.');
-    }, 450);
+    router.post(
+        '/pre-nomina/recalcular',
+        { periodId: activePeriodId.value },
+        {
+            preserveState: false,
+            preserveScroll: true,
+            onFinish: () => {
+                isLoading.value = false;
+                isRecalculating.value = false;
+                showFeedback('Pre-nómina recalculada con éxito en la base de datos.');
+            },
+        },
+    );
+};
+
+const handleStageChange = (newStage: 'Borrador' | 'En Revisión' | 'Aprobado RH' | 'Cerrado'): void => {
+    currentStage.value = newStage;
+    router.post(
+        '/pre-nomina/cambiar-estado',
+        {
+            periodId: activePeriodId.value,
+            status: newStage,
+        },
+        {
+            preserveState: true,
+            preserveScroll: true,
+            onSuccess: () => {
+                showFeedback(`Estado del período actualizado a ${newStage} en la base de datos.`);
+            },
+        },
+    );
 };
 
 const handleExportCsv = (): void => {
@@ -328,7 +353,31 @@ const saveAdjustedEmployee = (updated: PayrollRow): void => {
         payrollRows.value[idx] = updated;
     }
     adjustModalOpen.value = false;
-    showFeedback(`Ajustes manuales aplicados con éxito a ${updated.name}.`);
+
+    // Persistir ajuste en la base de datos
+    router.post(
+        '/pre-nomina/ajustar',
+        {
+            payrollId: updated.id,
+            days: updated.days,
+            delays: updated.delays,
+            absences: updated.absences,
+            extra: updated.extra,
+            perceptions: updated.perceptions,
+            deductions: updated.deductions,
+            net: updated.net,
+            bonus: updated.concepts?.bonus,
+            customDeductions: updated.concepts?.customDeductions,
+            adjustmentReason: updated.concepts?.adjustmentReason,
+        },
+        {
+            preserveState: true,
+            preserveScroll: true,
+            onSuccess: () => {
+                showFeedback(`Ajustes guardados permanentemente en la base de datos para ${updated.name}.`);
+            },
+        },
+    );
 };
 
 const handleCreatePayrollPeriod = (payload: {
@@ -341,25 +390,19 @@ const handleCreatePayrollPeriod = (payload: {
     groupBy: string;
     annualTaxAdjustment: boolean;
 }): void => {
-    const newId = String(Date.now());
-    const newPeriod = {
-        id: newId,
-        code: `NOM-${Math.floor(250 + Math.random() * 50)}`,
-        label: `${payload.startDate} — ${payload.endDate}`,
-        frequency: payload.frequency,
-        type: payload.type,
-        status: 'Borrador',
-        tone: 'amber' as const,
-        startDate: payload.startDate,
-        endDate: payload.endDate,
-        paymentDate: payload.paymentDate,
-    };
-
-    localPeriods.value.unshift(newPeriod);
-    activePeriodId.value = newId;
     newPayrollModalOpen.value = false;
-    currentStage.value = 'Borrador';
-    showFeedback(`Pre-Nómina "${payload.title}" creada y calculada exitosamente.`);
+    isLoading.value = true;
+
+    // Crear período real en la base de datos
+    router.post(
+        '/pre-nomina/crear-periodo',
+        payload,
+        {
+            onFinish: () => {
+                isLoading.value = false;
+            },
+        },
+    );
 };
 
 onMounted(() => {

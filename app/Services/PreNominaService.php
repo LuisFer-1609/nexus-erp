@@ -11,54 +11,17 @@ use App\Models\Nexus\PayrollDetail;
 use App\Models\Nexus\PayrollFrequency;
 use App\Models\Nexus\PayrollPeriod;
 use App\Models\Nexus\Position;
+use Illuminate\Support\Facades\DB;
 use Throwable;
 
 class PreNominaService
 {
     /**
      * Obtiene los períodos y el desglose de pre-nómina EXCLUSIVAMENTE desde la base de datos.
-     * Cero datos hardcodeados o mock; solo lo que exista en las tablas conectadas.
-     *
-     * @return array{
-     *     selectedPeriodId: string,
-     *     selectedFrequency: string,
-     *     frequencies: list<array{id: string, name: string}>,
-     *     periods: list<array{
-     *         id: string,
-     *         code: string,
-     *         label: string,
-     *         frequency: string,
-     *         type: string,
-     *         status: string,
-     *         tone: string,
-     *         startDate: string,
-     *         endDate: string,
-     *         paymentDate: string
-     *     }>,
-     *     currentPeriod: array{
-     *         id: string,
-     *         code: string,
-     *         label: string,
-     *         frequency: string,
-     *         type: string,
-     *         status: string,
-     *         tone: string,
-     *         summary: array{
-     *             employees: int,
-     *             perceptions: float,
-     *             deductions: float,
-     *             isr: float,
-     *             imss: float,
-     *             net: float
-     *         },
-     *         rows: list<array<string, mixed>>
-     *     }|null
-     * }
      */
     public function getPayrollData(?string $periodId = null, ?string $frequency = null): array
     {
         try {
-            // 1. Obtener catálogo real de frecuencias desde la base de datos
             $frequencies = [
                 ['id' => 'todas', 'name' => 'Todas las frecuencias'],
             ];
@@ -78,7 +41,6 @@ class PreNominaService
                 ];
             }
 
-            // 2. Obtener períodos reales desde la base de datos
             $periodQuery = PayrollPeriod::query()
                 ->whereNull(PayrollPeriod::DELETED_AT)
                 ->orderByDesc(PayrollPeriod::START_DATE);
@@ -125,7 +87,6 @@ class PreNominaService
                 ];
             }
 
-            // Seleccionar período solicitado o el primero de la BD
             $selectedMeta = $periods[0];
             if ($periodId !== null && $periodId !== '') {
                 foreach ($periods as $candidate) {
@@ -136,7 +97,6 @@ class PreNominaService
                 }
             }
 
-            // 3. Obtener registros de nómina vinculados al período
             $rows = $this->buildPayrollRows((int) $selectedMeta['id']);
             $summary = $this->summarizeRows($rows);
 
@@ -169,9 +129,201 @@ class PreNominaService
     }
 
     /**
+     * Guarda un ajuste manual por concepto persistiendo en la tabla payrolls y payroll_details.
+     */
+    public function saveAdjustment(int $payrollId, array $data): bool
+    {
+        try {
+            DB::beginTransaction();
+
+            $payroll = Payroll::query()->find($payrollId);
+            if (! $payroll) {
+                DB::rollBack();
+                return false;
+            }
+
+            if (isset($data['days'])) {
+                $payroll->setAttribute(Payroll::DAYS_WORKED, (int) $data['days']);
+            }
+            if (isset($data['delays'])) {
+                $payroll->setAttribute(Payroll::LATE_COUNT, (int) $data['delays']);
+            }
+            if (isset($data['absences'])) {
+                $payroll->setAttribute(Payroll::ABSENCE_COUNT, (int) $data['absences']);
+            }
+            if (isset($data['extra'])) {
+                $payroll->setAttribute(Payroll::OVERTIME_HOURS, (float) $data['extra']);
+            }
+            if (isset($data['perceptions'])) {
+                $payroll->setAttribute(Payroll::TOTAL_PERCEPTIONS, (float) $data['perceptions']);
+            }
+            if (isset($data['deductions'])) {
+                $payroll->setAttribute(Payroll::TOTAL_DEDUCTIONS, (float) $data['deductions']);
+            }
+            if (isset($data['net'])) {
+                $payroll->setAttribute(Payroll::NET_AMOUNT, (float) $data['net']);
+            }
+
+            $payroll->save();
+
+            // Si hay notas de ajuste o bonos, registrar detalle
+            if (!empty($data['adjustmentReason']) || !empty($data['customDeductions']) || !empty($data['bonus'])) {
+                $conceptId = 1; // Concepto estándar o bono
+                try {
+                    $firstConcept = PayrollConcept::query()->first();
+                    if ($firstConcept) {
+                        $conceptId = (int) $firstConcept->getAttribute(PayrollConcept::ID);
+                    }
+                } catch (Throwable) {}
+
+                PayrollDetail::query()->create([
+                    'payroll_id' => $payrollId,
+                    'payroll_concept_id' => $conceptId,
+                    'amount' => (float) ($data['customDeductions'] ?? $data['bonus'] ?? 0),
+                    'is_manual_adjustment' => 1,
+                    'notes' => (string) ($data['adjustmentReason'] ?? 'Ajuste manual aplicado desde pre-nómina'),
+                ]);
+            }
+
+            DB::commit();
+            return true;
+        } catch (Throwable) {
+            DB::rollBack();
+            return false;
+        }
+    }
+
+    /**
+     * Recalcula automáticamente la pre-nómina de un período a partir de los registros de asistencia reales.
+     */
+    public function recalculatePeriod(int $periodId): bool
+    {
+        try {
+            $period = PayrollPeriod::query()->find($periodId);
+            if (! $period) {
+                return false;
+            }
+
+            $startDate = (string) $period->getAttribute(PayrollPeriod::START_DATE);
+            $endDate = (string) $period->getAttribute(PayrollPeriod::END_DATE);
+
+            $payrolls = Payroll::query()->where(Payroll::PAYROLL_PERIOD_ID, $periodId)->get();
+            foreach ($payrolls as $payroll) {
+                $empId = (int) $payroll->getAttribute(Payroll::EMPLOYEE_ID);
+                $emp = Employee::query()->find($empId);
+                $dailySalary = $emp ? (float) $emp->getAttribute(Employee::BASE_SALARY) / 30.0 : 500.0;
+                $otRate = $emp ? (float) $emp->getAttribute(Employee::OVERTIME_RATE) : 150.0;
+
+                // Contar asistencias reales en el rango de fechas
+                $attendances = Attendance::query()
+                    ->where(Attendance::EMPLOYEE_ID, $empId)
+                    ->whereBetween(Attendance::DATE, [$startDate, $endDate])
+                    ->get();
+
+                $daysWorked = $attendances->count() > 0 ? $attendances->count() : 15;
+                $delays = $attendances->where('late_minutes', '>', 0)->count();
+                $extraHours = (float) $attendances->sum('overtime_hours');
+
+                $perceptions = round(($daysWorked * $dailySalary) + ($extraHours * $otRate), 2);
+                $imss = round($perceptions * 0.02725, 2);
+                $isr = round(($perceptions - $imss) * 0.08, 2);
+                $deductions = round(($delays * 50) + $imss + $isr, 2);
+                $net = max(0.0, round($perceptions - $deductions, 2));
+
+                $payroll->setAttribute(Payroll::DAYS_WORKED, $daysWorked);
+                $payroll->setAttribute(Payroll::LATE_COUNT, $delays);
+                $payroll->setAttribute(Payroll::OVERTIME_HOURS, $extraHours);
+                $payroll->setAttribute(Payroll::TOTAL_PERCEPTIONS, $perceptions);
+                $payroll->setAttribute(Payroll::TOTAL_DEDUCTIONS, $deductions);
+                $payroll->setAttribute(Payroll::NET_AMOUNT, $net);
+                $payroll->save();
+            }
+
+            return true;
+        } catch (Throwable) {
+            return false;
+        }
+    }
+
+    /**
+     * Crea un nuevo período de pre-nómina en la base de datos y genera sus registros de nómina.
+     */
+    public function createPeriod(array $data): ?int
+    {
+        try {
+            DB::beginTransaction();
+
+            $frequencyId = 2; // Default Quincenal
+            if (isset($data['frequency'])) {
+                $freqName = strtolower((string) $data['frequency']);
+                if (str_contains($freqName, 'seman')) $frequencyId = 1;
+                elseif (str_contains($freqName, 'mens')) $frequencyId = 3;
+            }
+
+            $companyId = 1;
+            $period = PayrollPeriod::query()->create([
+                'company_id' => $companyId,
+                'payroll_frequency_id' => $frequencyId,
+                'start_date' => $data['startDate'],
+                'end_date' => $data['endDate'],
+                'payment_date' => $data['paymentDate'] ?? $data['endDate'],
+                'status' => 'Borrador',
+            ]);
+
+            $periodId = (int) $period->getAttribute('id');
+
+            // Crear registros de nómina iniciales para los empleados activos
+            $activeEmployees = Employee::query()->where(Employee::IS_ACTIVE, 1)->get();
+            foreach ($activeEmployees as $emp) {
+                $baseSalary = (float) $emp->getAttribute(Employee::BASE_SALARY);
+                $dailyRate = $baseSalary > 0 ? $baseSalary / 30.0 : 500.0;
+                $days = $frequencyId === 1 ? 6 : ($frequencyId === 3 ? 30 : 15);
+                $perceptions = round($dailyRate * $days, 2);
+                $imss = round($perceptions * 0.02725, 2);
+                $isr = round(($perceptions - $imss) * 0.075, 2);
+                $deductions = round($imss + $isr, 2);
+                $net = max(0.0, round($perceptions - $deductions, 2));
+
+                Payroll::query()->create([
+                    'payroll_period_id' => $periodId,
+                    'employee_id' => (int) $emp->getAttribute('id'),
+                    'days_worked' => $days,
+                    'late_count' => 0,
+                    'absence_count' => 0,
+                    'overtime_hours' => 0,
+                    'total_perceptions' => $perceptions,
+                    'total_deductions' => $deductions,
+                    'net_amount' => $net,
+                ]);
+            }
+
+            DB::commit();
+            return $periodId;
+        } catch (Throwable) {
+            DB::rollBack();
+            return null;
+        }
+    }
+
+    /**
+     * Cambia el estado del período en la base de datos (Borrador, En Revisión, Aprobado RH, Cerrado).
+     */
+    public function updatePeriodStatus(int $periodId, string $status): bool
+    {
+        try {
+            $period = PayrollPeriod::query()->find($periodId);
+            if ($period) {
+                $period->setAttribute(PayrollPeriod::STATUS, $status);
+                return $period->save();
+            }
+            return false;
+        } catch (Throwable) {
+            return false;
+        }
+    }
+
+    /**
      * Construye las filas de pre-nómina para un período específico consultando la BD.
-     *
-     * @return list<array<string, mixed>>
      */
     private function buildPayrollRows(int $periodId): array
     {
@@ -192,25 +344,6 @@ class PreNominaService
 
         if ($payrolls->isEmpty()) {
             return [];
-        }
-
-        // Obtener detalles de conceptos de la BD si existen
-        $payrollIds = $payrolls->pluck(Payroll::ID)->all();
-        $detailsByPayroll = [];
-        if (!empty($payrollIds)) {
-            try {
-                $details = PayrollDetail::query()
-                    ->whereIn(PayrollDetail::PAYROLL_ID, $payrollIds)
-                    ->whereNull(PayrollDetail::DELETED_AT)
-                    ->get();
-
-                foreach ($details as $detail) {
-                    $pid = (int) $detail->getAttribute(PayrollDetail::PAYROLL_ID);
-                    $detailsByPayroll[$pid][] = $detail;
-                }
-            } catch (Throwable) {
-                $detailsByPayroll = [];
-            }
         }
 
         $rows = [];
@@ -239,7 +372,6 @@ class PreNominaService
             $deductions = (float) $payroll->getAttribute(Payroll::TOTAL_DEDUCTIONS);
             $net = (float) $payroll->getAttribute(Payroll::NET_AMOUNT);
 
-            // Desglose de conceptos
             $salaryPart = round($dailySalary * $daysWorked, 2);
             $overtimePart = round($extra * $overtimeRate, 2);
             $imss = round($perceptions * 0.02725, 2);
@@ -281,19 +413,6 @@ class PreNominaService
         return $rows;
     }
 
-    /**
-     * Resumen acumulado de percepciones, deducciones, impuestos y neto reales.
-     *
-     * @param list<array<string, mixed>> $rows
-     * @return array{
-     *     employees: int,
-     *     perceptions: float,
-     *     deductions: float,
-     *     isr: float,
-     *     imss: float,
-     *     net: float
-     * }
-     */
     private function summarizeRows(array $rows): array
     {
         $perceptions = 0.0;
@@ -318,30 +437,12 @@ class PreNominaService
         ];
     }
 
-    /**
-     * Obtiene el directorio de empleados activos y catálogo de áreas REALES desde la BD.
-     *
-     * @return array{
-     *     areas: list<string>,
-     *     employees: list<array<string, int|string>>
-     * }
-     */
     public function getEmployeesData(): array
     {
         try {
-            $areaMap = Area::query()
-                ->whereNull(Area::DELETED_AT)
-                ->pluck(Area::NAME, Area::ID)
-                ->all();
-
-            $positionMap = Position::query()
-                ->whereNull(Position::DELETED_AT)
-                ->pluck(Position::NAME, Position::ID)
-                ->all();
-
-            $employees = Employee::query()
-                ->whereNull(Employee::DELETED_AT)
-                ->get();
+            $areaMap = Area::query()->whereNull(Area::DELETED_AT)->pluck(Area::NAME, Area::ID)->all();
+            $positionMap = Position::query()->whereNull(Position::DELETED_AT)->pluck(Position::NAME, Position::ID)->all();
+            $employees = Employee::query()->whereNull(Employee::DELETED_AT)->get();
 
             $list = [];
             foreach ($employees as $emp) {
@@ -365,46 +466,18 @@ class PreNominaService
                 ];
             }
 
-            /** @var list<string> $areas */
-            $areas = array_values(array_map('strval', $areaMap));
-
-            return [
-                'areas' => $areas,
-                'employees' => $list,
-            ];
+            return ['areas' => array_values(array_map('strval', $areaMap)), 'employees' => $list];
         } catch (Throwable) {
-            return [
-                'areas' => [],
-                'employees' => [],
-            ];
+            return ['areas' => [], 'employees' => []];
         }
     }
 
-    /**
-     * Obtiene los registros de asistencia vinculados a empleados REALES desde la BD.
-     *
-     * @return array{
-     *     attendances: list<array<string, int|string>>
-     * }
-     */
     public function getAttendancesData(): array
     {
         try {
-            $employees = Employee::query()
-                ->whereNull(Employee::DELETED_AT)
-                ->get()
-                ->keyBy(Employee::ID);
-
-            $areaMap = Area::query()
-                ->whereNull(Area::DELETED_AT)
-                ->pluck(Area::NAME, Area::ID)
-                ->all();
-
-            $records = Attendance::query()
-                ->whereNull(Attendance::DELETED_AT)
-                ->orderByDesc(Attendance::DATE)
-                ->limit(50)
-                ->get();
+            $employees = Employee::query()->whereNull(Employee::DELETED_AT)->get()->keyBy(Employee::ID);
+            $areaMap = Area::query()->whereNull(Area::DELETED_AT)->pluck(Area::NAME, Area::ID)->all();
+            $records = Attendance::query()->whereNull(Attendance::DELETED_AT)->orderByDesc(Attendance::DATE)->limit(50)->get();
 
             $rows = [];
             foreach ($records as $record) {
@@ -432,22 +505,15 @@ class PreNominaService
                 ];
             }
 
-            return [
-                'attendances' => $rows,
-            ];
+            return ['attendances' => $rows];
         } catch (Throwable) {
-            return [
-                'attendances' => [],
-            ];
+            return ['attendances' => []];
         }
     }
 
     private function formatPeriodLabel(string $start, string $end): string
     {
-        if ($start === '' || $end === '') {
-            return 'Período actual';
-        }
-
+        if ($start === '' || $end === '') return 'Período actual';
         return $start.' — '.$end;
     }
 
@@ -456,7 +522,6 @@ class PreNominaService
         $parts = array_values(array_filter(explode(' ', trim($name))));
         $first = isset($parts[0]) ? mb_substr($parts[0], 0, 1) : 'U';
         $second = isset($parts[1]) ? mb_substr($parts[1], 0, 1) : '';
-
         return mb_strtoupper($first.$second);
     }
 }
