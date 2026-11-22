@@ -13,9 +13,13 @@ export type PayrollConceptBreakdown = {
 
 export type PayrollRow = {
     id: number;
+    employeeId?: number;
     initials?: string;
     name: string;
     area?: string;
+    accountNumber?: string;
+    clabe?: string;
+    bankName?: string;
     dailyRate: number;
     hourlyOvertimeRate: number;
     days: number;
@@ -48,6 +52,7 @@ export type PayrollPeriod = {
     frequency?: string;
     type?: string;
     status: string;
+    stage?: 'Borrador' | 'En Revisión' | 'Aprobado RH' | 'Cerrado';
     tone: 'amber' | 'green' | 'cyan' | 'slate';
     startDate?: string;
     endDate?: string;
@@ -88,7 +93,6 @@ export function recalculateEmployeeRow(
     const customDeductions = Number(overrides?.customDeductions ?? row.concepts?.customDeductions ?? 0);
     const adjustmentReason = overrides?.adjustmentReason ?? row.concepts?.adjustmentReason ?? '';
 
-    // Percepciones desglosadas por concepto
     const salary = Math.round(days * row.dailyRate);
     const overtime = Math.round(extra * row.hourlyOvertimeRate);
     const calculatedPerceptions = salary + overtime + bonus + customPerceptions;
@@ -98,7 +102,6 @@ export function recalculateEmployeeRow(
             ? Math.max(0, Math.round(overrides.perceptions))
             : calculatedPerceptions;
 
-    // Deducciones desglosadas por concepto
     const delaysPenalty = delays * 50;
     const absencesPenalty = Math.round(absences * row.dailyRate);
     const imss = Math.round(salary * 0.02725);
@@ -218,15 +221,68 @@ export function exportPayrollToCsv(
             )
             .join('\n');
 
-    const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    const slug = periodLabel
+    triggerFileDownload(
+        content,
+        `prenomina-${slugify(periodLabel)}.csv`,
+        'text/csv;charset=utf-8;',
+    );
+}
+
+/**
+ * Generador de Layout Bancario estándar mexicano (BBVA, Banorte, Santander) para dispersión de nómina
+ */
+export function exportBankDispersionLayout(
+    bank: 'BBVA' | 'Banorte' | 'Santander',
+    periodCode: string,
+    rows: PayrollRow[],
+): void {
+    const today = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+    let fileContent = '';
+    let fileName = '';
+
+    if (bank === 'BBVA') {
+        fileName = `DISPERSION_BBVA_${periodCode}_${today}.txt`;
+        const lines = rows.map((r, idx) => {
+            const clabe = r.clabe || `0121800${String(1000000000 + (r.employeeId ?? idx)).slice(0, 11)}`;
+            const amount = r.net.toFixed(2).padStart(13, '0');
+            const cleanName = r.name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').padEnd(30, ' ').slice(0, 30);
+            return `001${clabe}${amount}${cleanName}NOMINA NEXUS`;
+        });
+        fileContent = lines.join('\r\n');
+    } else if (bank === 'Banorte') {
+        fileName = `DISPERSION_BANORTE_${periodCode}_${today}.txt`;
+        const lines = rows.map((r, idx) => {
+            const account = r.accountNumber || `0${String(200000000 + (r.employeeId ?? idx)).slice(0, 9)}`;
+            const amount = r.net.toFixed(2);
+            return `01,${account},${amount},PAGO NOMINA NEXUS,${r.name}`;
+        });
+        fileContent = lines.join('\r\n');
+    } else {
+        fileName = `DISPERSION_SANTANDER_${periodCode}_${today}.txt`;
+        const lines = rows.map((r, idx) => {
+            const clabe = r.clabe || `0141800${String(1000000000 + (r.employeeId ?? idx)).slice(0, 11)}`;
+            const amount = r.net.toFixed(2);
+            return `SAN|${clabe}|${amount}|MXN|NOMINA|${r.name}`;
+        });
+        fileContent = lines.join('\r\n');
+    }
+
+    triggerFileDownload(fileContent, fileName, 'text/plain;charset=utf-8;');
+}
+
+function slugify(text: string): string {
+    return text
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/^-|-$/g, '');
+}
+
+function triggerFileDownload(content: string, filename: string, mime: string): void {
+    const blob = new Blob([content], { type: mime });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
     link.href = url;
-    link.download = `prenomina-${slug || 'periodo'}.csv`;
+    link.download = filename;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
