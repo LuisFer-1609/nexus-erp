@@ -185,15 +185,18 @@ const minutesBetween = (from: string, to: string): number => {
 };
 const formatMinutes = (minutes: number): string =>
     minutes > 0 ? `${minutes} min` : '—';
+const statusTones: Record<
+    AttendanceStatus,
+    'green' | 'amber' | 'red' | 'slate'
+> = {
+    'A tiempo': 'green',
+    Retardo: 'amber',
+    Falta: 'red',
+    Descanso: 'slate',
+};
 const statusTone = (
     status: AttendanceStatus,
-): 'green' | 'amber' | 'red' | 'slate' =>
-    ({
-        'A tiempo': 'green',
-        Retardo: 'amber',
-        Falta: 'red',
-        Descanso: 'slate',
-    })[status];
+): 'green' | 'amber' | 'red' | 'slate' => statusTones[status];
 const openEditor = (row: Attendance): void => {
     router.visit(`/pre-nomina/asistencias/${row.id}`);
 };
