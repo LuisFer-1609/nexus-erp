@@ -61,46 +61,83 @@ const initials = computed(() =>
         .join(''),
 );
 
-const companyName = 'Empresa activa';
+const roleName = computed(
+    () => (page.props.auth as { role?: string }).role ?? '',
+);
+const companyName = computed(
+    () => (page.props.auth as { company?: string }).company ?? 'Empresa activa',
+);
 
-const navSections: NavSection[] = [
-    {
-        key: 'crm',
-        label: 'CRM',
-        icon: Contact,
-        paths: ['/dashboard', '/crm'],
-        items: [
-            { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-            { label: 'Leads', href: '/crm/leads', icon: Contact },
-            { label: 'Clientes', href: '/crm/clientes', icon: Users },
-            { label: 'Asistente IA', href: '/crm/asistente', icon: Bot },
-            {
-                label: 'Configuración',
-                href: '/crm/configuracion',
-                icon: Settings,
-            },
-        ],
-    },
-    {
-        key: 'payroll',
-        label: 'PRE-NÓMINA',
-        icon: WalletCards,
-        paths: ['/pre-nomina'],
-        items: [
-            {
-                label: 'Empleados',
-                href: '/pre-nomina/empleados',
-                icon: UserRound,
-            },
-            {
-                label: 'Asistencias',
-                href: '/pre-nomina/asistencias',
-                icon: Clock3,
-            },
-            { label: 'Pre-nómina', href: '/pre-nomina', icon: WalletCards },
-        ],
-    },
-];
+const navSections = computed<NavSection[]>(() => {
+    const sections: NavSection[] = [
+        {
+            key: 'crm',
+            label: 'CRM',
+            icon: Contact,
+            paths: ['/dashboard', '/crm'],
+            items: [
+                {
+                    label: 'Dashboard',
+                    href: '/dashboard',
+                    icon: LayoutDashboard,
+                },
+                ...(['Administrador', 'Marketing'].includes(roleName.value)
+                    ? [
+                          { label: 'Leads', href: '/crm/leads', icon: Contact },
+                          {
+                              label: 'Campañas',
+                              href: '/crm/campanas',
+                              icon: LayoutDashboard,
+                          },
+                          {
+                              label: 'Clientes',
+                              href: '/crm/clientes',
+                              icon: Users,
+                          },
+                          {
+                              label: 'Asistente IA',
+                              href: '/crm/asistente',
+                              icon: Bot,
+                          },
+                      ]
+                    : []),
+                ...(roleName.value === 'Administrador'
+                    ? [
+                          {
+                              label: 'Configuración',
+                              href: '/crm/configuracion',
+                              icon: Settings,
+                          },
+                      ]
+                    : []),
+            ],
+        },
+    ];
+
+    if (['Administrador', 'Recursos Humanos'].includes(roleName.value)) {
+        sections.push({
+            key: 'payroll',
+            label: 'PRE-NÓMINA',
+            icon: WalletCards,
+            paths: ['/pre-nomina'],
+            items: [
+                {
+                    label: 'Empleados',
+                    href: '/pre-nomina/empleados',
+                    icon: UserRound,
+                },
+                {
+                    label: 'Asistencias',
+                    href: '/pre-nomina/asistencias',
+                    icon: Clock3,
+                },
+                { label: 'Pre-nómina', href: '/pre-nomina', icon: WalletCards },
+            ],
+        });
+    }
+
+    return sections;
+});
 
 const currentPath = computed(() => page.url.split('?')[0]);
 

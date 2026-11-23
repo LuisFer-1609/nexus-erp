@@ -1,13 +1,22 @@
 <?php
 
+use App\Models\Nexus\MetaConnection;
 use App\Models\User;
 use Illuminate\Http\Client\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 
 test('authenticated users can list Meta ad accounts', function () {
     config()->set('services.meta.url', 'https://graph.facebook.com');
     config()->set('services.meta.version', 'v27.0');
-    config()->set('services.meta.access_token', 'test-token');
+    $companyId = DB::table('companies')->insertGetId(['name' => 'Empresa de prueba']);
+    $roleId = DB::table('roles')->insertGetId(['name' => 'Administrador', 'created_at' => now()]);
+    $user = User::factory()->create(['company_id' => $companyId, 'role_id' => $roleId]);
+    MetaConnection::query()->create([
+        'company_id' => $companyId,
+        'access_token' => 'test-token',
+        'token_fingerprint' => hash('sha256', 'test-token'),
+    ]);
 
     Http::fake([
         'https://graph.facebook.com/v27.0/me/adaccounts*' => Http::response([
@@ -23,7 +32,7 @@ test('authenticated users can list Meta ad accounts', function () {
     ]);
 
     $response = $this
-        ->actingAs(User::factory()->create())
+        ->actingAs($user)
         ->getJson(route('crm.meta.ad-accounts.index'));
 
     $response->assertOk()->assertExactJson([
@@ -34,6 +43,7 @@ test('authenticated users can list Meta ad accounts', function () {
             'status' => 1,
             'currency' => 'MXN',
             'timezone' => 'America/Mexico_City',
+            'linked' => false,
         ]],
     ]);
 

@@ -3,14 +3,27 @@
 namespace App\Http\Controllers\crm;
 
 use App\Http\Controllers\Controller;
+use App\Services\Crm\Meta\MetaAccess;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class CrmController extends Controller
 {
-    public function leads(): Response
+    public function leads(Request $request, MetaAccess $access): Response
     {
-        return Inertia::render('crm/Leads');
+        $access->assertReadable($request);
+
+        return Inertia::render('crm/Leads', [
+            'leads' => DB::table('leads as l')
+                ->join('lead_stages as s', 's.id', '=', 'l.lead_stage_id')
+                ->join('lead_sources as o', 'o.id', '=', 'l.lead_source_id')
+                ->where('l.company_id', $access->companyId($request))
+                ->whereNull('l.deleted_at')
+                ->select('l.id', 'l.full_name', 'l.email', 'l.phone', 'l.meta_page_id', 'l.meta_form_id', 'l.meta_campaign_id', 'l.created_at', 's.name as stage', 'o.name as source')
+                ->orderByDesc('l.created_at')->paginate(50),
+        ]);
     }
 
     public function clientes(): Response

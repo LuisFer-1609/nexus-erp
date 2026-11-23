@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * Modelo de la tabla `roles`.
+ *
+ * @property string $name
  */
 class Role extends Model
 {

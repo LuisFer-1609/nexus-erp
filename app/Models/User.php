@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Nexus\Company;
+use App\Models\Nexus\Role;
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
@@ -42,6 +45,24 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
 
     protected $table = self::TABLE;
 
+    /** @return BelongsTo<Company, $this> */
+    public function company(): BelongsTo
+    {
+        return $this->belongsTo(Company::class, 'company_id');
+    }
+
+    /** @return BelongsTo<Role, $this> */
+    public function role(): BelongsTo
+    {
+        return $this->belongsTo(Role::class, 'role_id');
+    }
+
+    /** @return BelongsTo<Nexus\User, $this> */
+    public function erpUser(): BelongsTo
+    {
+        return $this->belongsTo(Nexus\User::class, 'erp_user_id');
+    }
+
     /**
      * Get the attributes that should be cast.
      *
@@ -52,6 +73,8 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_platform_admin' => 'boolean',
+            'password_set_at' => 'datetime',
             'two_factor_confirmed_at' => 'datetime',
         ];
     }

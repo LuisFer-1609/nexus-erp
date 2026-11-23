@@ -20,7 +20,7 @@ class AdminUserSeeder extends Seeder
             throw new RuntimeException('NEXUS_ADMIN_PASSWORD must be configured before running AdminUserSeeder.');
         }
 
-        User::query()->firstOrCreate(
+        $admin = User::query()->firstOrCreate(
             ['email' => 'admin@utt.com'],
             [
                 'name' => 'Administrador NexusERP',
@@ -28,5 +28,12 @@ class AdminUserSeeder extends Seeder
                 'password' => Hash::make($password),
             ],
         );
+
+        $admin->forceFill([
+            'is_platform_admin' => true,
+            'company_id' => null,
+            'role_id' => null,
+            'password_set_at' => $admin->password_set_at ?? now(),
+        ])->save();
     }
 }

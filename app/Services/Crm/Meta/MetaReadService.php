@@ -11,7 +11,7 @@ class MetaReadService
     /**
      * @return array<int, array<string, int|string>>
      */
-    public function adAccounts(): array
+    public function adAccounts(?string $accessToken = null): array
     {
         return array_map(
             fn (array $account): array => [
@@ -22,7 +22,25 @@ class MetaReadService
                 'currency' => (string) $account['currency'],
                 'timezone' => (string) $account['timezone_name'],
             ],
-            $this->metaClient->adAccounts(),
+            $this->metaClient->adAccounts($accessToken),
         );
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    public function campaigns(string $adAccountId, string $accessToken): array
+    {
+        return $this->metaClient->campaigns($adAccountId, $accessToken);
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    public function pages(string $accessToken): array
+    {
+        return $this->metaClient->pages($accessToken);
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    public function insights(string $adAccountId, string $accessToken, string $since, string $until): array
+    {
+        return $this->metaClient->insights($adAccountId, $accessToken, $since, $until);
     }
 }

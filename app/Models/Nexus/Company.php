@@ -6,6 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * Modelo de la tabla `companies`.
+ *
+ * @property int $id
+ * @property string $name
+ * @property bool $is_active
  */
 class Company extends Model
 {
