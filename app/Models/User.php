@@ -35,6 +35,14 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
     use HasFactory, Notifiable, PasskeyAuthenticatable, TwoFactorAuthenticatable;
 
     /**
+     * Tabla de inicio de sesión de Laravel. No es la tabla `users` del ERP
+     * (nexuserp.sql), que conserva su propia estructura.
+     */
+    public const TABLE = 'auth_users';
+
+    protected $table = self::TABLE;
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>

@@ -2,7 +2,6 @@
   <img src="https://files.catbox.moe/gl4wga.png" alt="NEXUX ERP" width="250" />
 </p>
 
-
 <div align="center">
 <h1>UNIDAD 1</h1>
 </div>
@@ -92,7 +91,7 @@ Para saber qué tan complicado puede ponerse el proyecto, se evalúa cada riesgo
 Se multiplican ambos números y el resultado nos dice el nivel de riesgo:
 
 | **Puntaje** | **Nivel** |
-|-------------|-----------|
+| ----------- | --------- |
 | 1 – 10      | Bajo      |
 | 11 – 15     | Medio     |
 | 16 – 20     | Alto      |
@@ -101,7 +100,7 @@ Se multiplican ambos números y el resultado nos dice el nivel de riesgo:
 ### 6.1 Matriz de probabilidad e impacto
 
 | **Impacto \\ Probabilidad** | **1** | **2** | **3** | **4** | **5** |
-|-----------------------------|-------|-------|-------|-------|-------|
+| --------------------------- | ----- | ----- | ----- | ----- | ----- |
 | **5**                       | 5     | 10    | 15    | 20    | 25    |
 | **4**                       | 4     | 8     | 12    | 16    | 20    |
 | **3**                       | 3     | 6     | 9     | 12    | 15    |
@@ -111,7 +110,7 @@ Se multiplican ambos números y el resultado nos dice el nivel de riesgo:
 ### 6.2 Riesgos identificados
 
 | **\#** | **Riesgo**                                                                                                                                                    | **Prob.** | **Impacto** | **Puntaje** | **Nivel** |
-|--------|---------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------|-------------|-------------|-----------|
+| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- | ----------- | ----------- | --------- |
 | 1      | Que el cliente pida cambios pequeños durante el proyecto (colores, textos, ajustes de pantalla)                                                               | 5         | 2           | 10          | Bajo      |
 | 2      | Que se tenga que cambiar cómo está organizada la información guardada, ya avanzado el proyecto                                                                | 3         | 5           | 15          | Medio     |
 | 3      | Que pidan agregar funciones nuevas que no estaban contempladas al inicio                                                                                      | 4         | 4           | 16          | Alto      |
@@ -142,12 +141,12 @@ Esta decisión se tomó considerando lo siguiente:
 
 - El equipo está conformado por 5 integrantes y el proyecto se desarrolla en 5 sprints:
 
-  - Sprint 1: Arquitectura base y RBAC
-  - Sprint 2: CRM y sincronización social
-  - Sprint 3: Nómina y pre-nómina
-  - Sprint 4: Asistente de IA
-  - Sprint 5: Interfaz reactiva y streaming
-  - Una arquitectura de microservicios añadiría una complejidad de comunicación y coordinación entre servicios que no es necesaria en esta etapa del proyecto.
+    - Sprint 1: Arquitectura base y RBAC
+    - Sprint 2: CRM y sincronización social
+    - Sprint 3: Nómina y pre-nómina
+    - Sprint 4: Asistente de IA
+    - Sprint 5: Interfaz reactiva y streaming
+    - Una arquitectura de microservicios añadiría una complejidad de comunicación y coordinación entre servicios que no es necesaria en esta etapa del proyecto.
 
 - Organizar el sistema por módulos permite que cada integrante trabaje en su área asignada con poca dependencia del resto, sin perder orden ni claridad en el código.
 
@@ -170,7 +169,7 @@ Esta elección responde a los propios objetivos planteados en el documento:
 Para mantener el sistema ordenado, seguro y fácil de mantener conforme crezca, se aplicarán los siguientes patrones de diseño:
 
 | **Patrón**                                                | **Propósito dentro del proyecto**                                                                                                                                                |
-|-----------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| --------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Aislamiento por empresa (tenant scoping)                  | Garantizar que la información de cada empresa se mantenga separada, de modo que ninguna pueda ver los datos de otra.                                                             |
 | Middleware de validación                                  | Verificar, antes de procesar cualquier solicitud, que el usuario esté autenticado, pertenezca a la empresa correspondiente y cuente con el permiso necesario.                    |
 | Repositorio (Repository)                                  | Separar la forma en que se almacenan los datos de la lógica de negocio, facilitando el mantenimiento de los módulos de CRM, Nómina y del historial del chat.                     |
@@ -223,7 +222,7 @@ flowchart LR
 Requisitos numerados y agrupados por módulo, redactados como historias de usuario con su criterio de aceptación.
 
 | **ID** | **Historia de usuario**                                                                                                                                                                                                                 | **Criterio de aceptación**                                                                                                                                                                                                                               |
-|--------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | RF-01  | Como encargado de ventas, quiero que los leads generados desde los formularios de Facebook e Instagram vinculados a la empresa entren automáticamente al CRM, para poder darles seguimiento sin consultar cada plataforma por separado. | Cuando se genera un nuevo lead en un formulario conectado, NexusERP lo registra automáticamente en el CRM con su origen identificado.                                                                                                                    |
 | RF-02  | Como encargado de ventas, quiero calificar y priorizar leads, para dar seguimiento a los más valiosos primero.                                                                                                                          | Se puede asignar etiqueta/puntaje y filtrar la tabla por ese criterio.                                                                                                                                                                                   |
 | RF-03  | Como encargado de ventas, quiero ver el embudo de ventas por etapas, para saber en qué punto está cada cliente.                                                                                                                         | Cada lead muestra una etapa (nuevo, contactado, negociación, cerrado) editable.                                                                                                                                                                          |
@@ -247,7 +246,7 @@ Requisitos numerados y agrupados por módulo, redactados como historias de usuar
 ### 7.2 Requisitos no funcionales
 
 | **ID** | **Requisito**                            | **Métrica / criterio**                                                                                                         |
-|--------|------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------|
+| ------ | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
 | RNF-01 | Seguridad y aislamiento de datos         | Todas las consultas filtradas por empresa_id; sin fugas entre inquilinos verificado con pruebas.                               |
 | RNF-02 | Control de acceso basado en roles (RBAC) | Matriz de permisos documentada y probada por rol.                                                                              |
 | RNF-03 | Rendimiento de la interfaz               | Respuesta de la SPA a acciones de usuario en menos de 2 s en condiciones normales.                                             |
@@ -279,11 +278,11 @@ Con base en los requisitos anteriores, se prioriza el alcance en tres niveles, p
 - Notificaciones automáticas (correo/push) de vencimientos y pendientes.
 - Sistema de planes para ampliar el número de cuentas de Facebook e Instagram vinculadas por empresa, permitiendo superar el límite inicial de 10 cuentas de acuerdo con las necesidades de cada cliente.
 
-| Dimensión | Definición |
-|---|---|
-| Usuarios objetivo | Micro y pequeñas empresas con equipos de ventas y RH de hasta ~30 empleados. |
-| Func<br>• Sistema de planes para ampliar el número de cuentas de Facebook e Instagram vinculadas por empresa, permitiendo superar el límite inicial de 10 cuentas de acuerdo con las necesidades de cada cliente.iones incluidas | CRM básico, control de asistencias, pre-nómina y chat IA (ver 8.1). |
-| Plazo | 5 sprints (ver cronograma, sección 11), entregando el MVP funcional al cierre del proyecto. |
+| Dimensión                                                                                                                                                                                                                        | Definición                                                                                  |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| Usuarios objetivo                                                                                                                                                                                                                | Micro y pequeñas empresas con equipos de ventas y RH de hasta ~30 empleados.                |
+| Func<br>• Sistema de planes para ampliar el número de cuentas de Facebook e Instagram vinculadas por empresa, permitiendo superar el límite inicial de 10 cuentas de acuerdo con las necesidades de cada cliente.iones incluidas | CRM básico, control de asistencias, pre-nómina y chat IA (ver 8.1).                         |
+| Plazo                                                                                                                                                                                                                            | 5 sprints (ver cronograma, sección 11), entregando el MVP funcional al cierre del proyecto. |
 
 ## 9. ELECCIÓN DE METODOLOGÍA Y ROLES DEL EQUIPO
 
@@ -294,7 +293,7 @@ Se elige Scrum adaptado al contexto académico: 5 integrantes y 5 sprints se ali
 ### 9.2 Roles del equipo
 
 | **Integrante**                | **Rol en el proyecto**                     | **Responsabilidad principal**                                                                         |
-|-------------------------------|--------------------------------------------|-------------------------------------------------------------------------------------------------------|
+| ----------------------------- | ------------------------------------------ | ----------------------------------------------------------------------------------------------------- |
 | Juan Ángel Castañeda Chávez   | Líder / Product Owner                      | Prioriza el backlog, es el punto de contacto con el profesor y valida los entregables de cada sprint. |
 | Luis Fernando Robles Ibarra   | Desarrollador — Módulo CRM                 | Captura de leads, embudo de ventas e integración con Facebook/Instagram.                              |
 | José Eduardo Villarreal Pérez | Desarrollador — Módulo Nómina              | Registro de asistencias y motor de cálculo de pre-nómina.                                             |
@@ -313,7 +312,7 @@ Esta asignación es una propuesta inicial; el equipo puede ajustarla según afin
 Desglose de las funciones del MVP en tareas de desarrollo, con estimación en días-persona, dependencias y criterio de terminado (Definition of Done: código funcionando, probado manualmente y integrado a la rama principal).
 
 | **Módulo** | **Tarea**                                                       | **Estimación** | **Depende de**               |
-|------------|-----------------------------------------------------------------|----------------|------------------------------|
+| ---------- | --------------------------------------------------------------- | -------------- | ---------------------------- |
 | Base       | Definir modelo de datos multi-tenant (empresa_id en cada tabla) | 3 días         | —                            |
 | Base       | Login, sesión y selector de empresa                             | 3 días         | Modelo de datos              |
 | Base       | Middleware de autenticación y RBAC (Chain of Responsibility)    | 3 días         | Login                        |
@@ -332,7 +331,7 @@ Desglose de las funciones del MVP en tareas de desarrollo, con estimación en d�
 Cinco sprints de dos semanas cada uno, con un hito demostrable al cierre de cada sprint.
 
 | **Sprint** | **Semanas** | **Objetivo del sprint**                                      | **Entregable / hito**                                  | **Responsable principal** |
-|------------|-------------|--------------------------------------------------------------|--------------------------------------------------------|---------------------------|
+| ---------- | ----------- | ------------------------------------------------------------ | ------------------------------------------------------ | ------------------------- |
 | Sprint 1   | 1-2         | Base del sistema: modelo de datos, login multi-tenant y RBAC | Login funcional con selección de empresa               | Líder + todo el equipo    |
 | Sprint 2   | 3-4         | Módulo CRM: captura de leads y embudo de ventas              | Demo de leads entrando desde Facebook/Instagram        | Luis Fernando             |
 | Sprint 3   | 5-6         | Módulo Nómina: asistencias y motor de pre-nómina             | Pre-nómina calculada de un periodo de prueba           | José Eduardo              |
@@ -344,7 +343,7 @@ Cinco sprints de dos semanas cada uno, con un hito demostrable al cierre de cada
 Stack concreto, elegido para cubrir directamente los requisitos no funcionales de la sección 7.2 (seguridad multi-tenant, streaming del chat y colas de trabajo en segundo plano).
 
 | **Capa**                          | **Tecnología elegida**                          | **Por qué**                                                                                                                                                                            |
-|-----------------------------------|-------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| --------------------------------- | ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Backend                           | Laravel (PHP) — monolito modular                | Framework robusto y maduro, con soporte nativo para colas de trabajo en segundo plano (RNF-07) y autenticación/roles integrados, tal como se plantea en la justificación del proyecto. |
 | Frontend                          | SPA con Vue.js + Inertia.js                     | Interfaz reactiva sin recargar la página, necesaria para el streaming del chat de IA (RNF-04) y para dashboards con filtros dinámicos.                                                 |
 | Base de datos                     | PostgreSQL                                      | Motor relacional confiable, con soporte de la extensión pgvector para las consultas de IA (RAG) sin depender de un motor aparte.                                                       |
@@ -358,7 +357,7 @@ Stack concreto, elegido para cubrir directamente los requisitos no funcionales d
 Bocetos de baja fidelidad de las seis pantallas principales, con orden lógico de navegación: iniciar sesión → elegir empresa → dashboard → módulos (CRM, asistencias, pre-nómina) → chat de IA. Consideraciones: en escritorio el menú lateral queda fijo; en móvil/tablet se colapsa a un menú superior tipo hamburguesa, manteniendo el mismo orden de navegación.
 
 | **\#** | **Pantalla**                | **Elementos principales**                                                |
-|--------|-----------------------------|--------------------------------------------------------------------------|
+| ------ | --------------------------- | ------------------------------------------------------------------------ |
 | 1      | Dashboard CRM               | KPIs de ventas, tabla de leads con filtros por etapa y origen (FB/IG).   |
 | 2      | Ficha de cliente            | Datos de contacto, historial de interacciones, notas y siguiente acción. |
 | 3      | Pre-nómina                  | Selector de periodo, tabla de cálculo por empleado, botón de exportar.   |
@@ -377,7 +376,7 @@ El maquetado de la interfaz de NexusERP 2.0 puede consultarse en Figma mediante 
 ## 14. DEFINICIÓN DE CONTENIDO (TEXTOS, IMÁGENES, ETC.)
 
 | **Tipo de contenido**    | **Detalle**                                                                   | **Criterio de selección / licencia**                                                             |
-|--------------------------|-------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------|
+| ------------------------ | ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
 | Textos de interfaz       | Etiquetas de botones, mensajes de error/éxito, textos de ayuda en formularios | Tono cercano y claro, en español neutro, redactados por el propio equipo.                        |
 | Copys informativos       | Descripciones cortas de cada módulo en el dashboard (onboarding)              | Mismo tono; revisados por el líder antes de integrarse.                                          |
 | Logo e identidad visual  | Logotipo 'Nexus ERP', paleta de colores, ícono de la app                      | Diseño propio del equipo; sin uso de marcas de terceros.                                         |
@@ -399,40 +398,40 @@ La navegación lateral del sistema se organiza en dos módulos principales: **CR
 ### CRM
 
 - **Dashboard**
-  - Vista general del módulo CRM.
-  - Muestra indicadores principales, leads recientes y accesos rápidos.
+    - Vista general del módulo CRM.
+    - Muestra indicadores principales, leads recientes y accesos rápidos.
 
 - **Leads**
-  - Muestra el listado completo de leads.
-  - Permite consultar origen, etapa, prioridad, responsable, última interacción y próxima acción.
-  - Desde la acción **Ver ficha** se accede a la ficha detallada del cliente.
+    - Muestra el listado completo de leads.
+    - Permite consultar origen, etapa, prioridad, responsable, última interacción y próxima acción.
+    - Desde la acción **Ver ficha** se accede a la ficha detallada del cliente.
 
 - **Clientes**
-  - Muestra la cartera general de clientes.
-  - Permite consultar información básica, responsable, origen, última interacción y estado.
-  - Desde la acción **Ver cliente** se accede a la ficha detallada del cliente.
+    - Muestra la cartera general de clientes.
+    - Permite consultar información básica, responsable, origen, última interacción y estado.
+    - Desde la acción **Ver cliente** se accede a la ficha detallada del cliente.
 
 - **Asistente IA**
-  - Abre la interfaz del asistente empresarial.
-  - Permite realizar consultas relacionadas con clientes, ventas y personal autorizado.
+    - Abre la interfaz del asistente empresarial.
+    - Permite realizar consultas relacionadas con clientes, ventas y personal autorizado.
 
 - **Configuración**
-  - Contiene la configuración relacionada con la empresa y el módulo CRM.
-  - Incluye Empresa, Usuarios y roles e Integraciones con Meta Business.
+    - Contiene la configuración relacionada con la empresa y el módulo CRM.
+    - Incluye Empresa, Usuarios y roles e Integraciones con Meta Business.
 
 ### PRE-NÓMINA
 
 - **Empleados**
-  - Muestra el directorio de empleados registrados.
-  - Permite consultar área, puesto, contacto, fecha de ingreso, estado y horario.
+    - Muestra el directorio de empleados registrados.
+    - Permite consultar área, puesto, contacto, fecha de ingreso, estado y horario.
 
 - **Asistencias**
-  - Muestra el control diario de asistencias.
-  - Incluye entradas, salidas, retardos, faltas y horas extra.
+    - Muestra el control diario de asistencias.
+    - Incluye entradas, salidas, retardos, faltas y horas extra.
 
 - **Pre-nómina**
-  - Muestra el cálculo previo de nómina.
-  - Incluye percepciones, deducciones, incidencias y neto estimado por empleado.
+    - Muestra el cálculo previo de nómina.
+    - Incluye percepciones, deducciones, incidencias y neto estimado por empleado.
 
 ---
 
@@ -532,20 +531,20 @@ PRE-NÓMINA → Pre-nómina
 
 En la página **Prototipado** de Figma, las principales acciones utilizan navegación por clic para permitir probar el flujo del sistema.
 
-| Acción | Destino |
-| --- | --- |
-| Ingresar a NexusERP | Dashboard CRM |
-| CRM → Dashboard | Dashboard CRM |
-| CRM → Leads | Leads |
-| CRM → Clientes | Clientes |
-| CRM → Asistente IA | Asistente IA |
-| CRM → Configuración | Configuración |
-| PRE-NÓMINA → Empleados | Empleados |
-| PRE-NÓMINA → Asistencias | Asistencias |
-| PRE-NÓMINA → Pre-nómina | Pre-nómina |
-| Ver ficha desde Leads | Ficha de cliente |
-| Ver cliente desde Clientes | Ficha de cliente |
-| Breadcrumb de Ficha de cliente | Clientes |
+| Acción                         | Destino          |
+| ------------------------------ | ---------------- |
+| Ingresar a NexusERP            | Dashboard CRM    |
+| CRM → Dashboard                | Dashboard CRM    |
+| CRM → Leads                    | Leads            |
+| CRM → Clientes                 | Clientes         |
+| CRM → Asistente IA             | Asistente IA     |
+| CRM → Configuración            | Configuración    |
+| PRE-NÓMINA → Empleados         | Empleados        |
+| PRE-NÓMINA → Asistencias       | Asistencias      |
+| PRE-NÓMINA → Pre-nómina        | Pre-nómina       |
+| Ver ficha desde Leads          | Ficha de cliente |
+| Ver cliente desde Clientes     | Ficha de cliente |
+| Breadcrumb de Ficha de cliente | Clientes         |
 
 ---
 
@@ -630,12 +629,14 @@ test: Adición de pruebas unitarias o integrales faltantes, o corrección de pru
 
 chore: Cambios en el proceso de construcción, herramientas auxiliares, dependencias o librerías.
 
-
 ## 5. DIAGRAMA DE CASOS DE USO
+
 https://drive.google.com/file/d/1CY-VgM-pZoZh2Sq-MmlrGP0uKzC80v2o/view?usp=sharing
 
 ## 6. Diagrama De Entidad Relacion
+
 https://drive.google.com/file/d/1uBee1hVxAxLycld2SEJiaz5gK6USAcsQ/view?usp=sharing
 
 ## 7. Diccionario De Datos De Base De Datos
+
 https://claude.ai/artifact/5vbkpGSJNweekbkWgbBLud

@@ -7,15 +7,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
-import { register } from '@/routes';
 import { store } from '@/routes/login';
 import { request } from '@/routes/password';
 
 defineOptions({
     layout: {
         title: 'Bienvenido de nuevo',
-        description:
-            'Ingresa tus credenciales y selecciona la empresa con la que trabajarás.',
     },
 });
 
@@ -93,34 +90,6 @@ const inputClasses =
                 <InputError :message="errors.password" />
             </div>
 
-            <div class="space-y-2">
-                <Label
-                    for="company"
-                    class="text-[13px] font-semibold text-[#111827] dark:text-[#111827]"
-                    >Empresa activa</Label
-                >
-                <div
-                    id="company"
-                    class="flex h-14 items-center rounded-[7px] border border-[#e2e8f0] bg-white px-4 dark:border-[#e2e8f0] dark:bg-white"
-                >
-                    <span
-                        class="flex size-9 shrink-0 items-center justify-center rounded-md bg-[#eff6ff] text-[13px] font-semibold text-[#2563eb]"
-                        >A</span
-                    >
-                    <span class="ml-3 min-w-0 flex-1">
-                        <span
-                            class="block truncate text-sm font-semibold text-[#111827] dark:text-[#111827]"
-                            >Acme Marketing</span
-                        >
-                        <span
-                            class="mt-0.5 block text-xs text-[#64748b] dark:text-[#64748b]"
-                            >Rol: Administrador</span
-                        >
-                    </span>
-                    <span class="text-sm font-medium text-[#64748b]">⌄</span>
-                </div>
-            </div>
-
             <Button
                 type="submit"
                 class="h-11 w-full rounded-md bg-[#23c6c8] text-sm font-semibold text-white shadow-none hover:bg-[#1eb1b3] focus-visible:ring-[#23c6c8]/30"
@@ -132,16 +101,5 @@ const inputClasses =
                 Ingresar a NexusERP
             </Button>
         </div>
-
-        <p class="mt-5 text-center text-xs text-[#64748b] dark:text-[#64748b]">
-            ¿No tienes una cuenta?
-            <TextLink
-                :href="register()"
-                :tabindex="4"
-                class="font-semibold text-[#139b9e] no-underline dark:text-[#139b9e]"
-            >
-                Regístrate
-            </TextLink>
-        </p>
     </Form>
 </template>

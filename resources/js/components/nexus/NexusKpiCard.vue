@@ -43,7 +43,10 @@ const toneClasses = {
     <article
         class="group relative min-h-[112px] overflow-hidden rounded-[10px] border border-slate-200 bg-white p-4 transition duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md hover:shadow-slate-200/50 motion-reduce:transform-none motion-reduce:transition-none"
     >
-        <span class="absolute inset-x-0 top-0 h-0.5 opacity-0 transition-opacity group-hover:opacity-100" :class="toneClasses[props.tone].mark" />
+        <span
+            class="absolute inset-x-0 top-0 h-0.5 opacity-0 transition-opacity group-hover:opacity-100"
+            :class="toneClasses[props.tone].mark"
+        />
         <div class="flex items-start gap-3.5">
             <div
                 v-if="icon"
@@ -53,9 +56,19 @@ const toneClasses = {
                 <component :is="icon" class="size-4" />
             </div>
             <div class="min-w-0">
-                <p class="text-[11px] font-medium text-slate-500">{{ label }}</p>
-                <p class="mt-1 text-[23px] font-semibold tracking-tight text-slate-900">{{ value }}</p>
-                <p v-if="helper" class="mt-1 text-[10px] font-medium" :class="toneClasses[props.tone].helper">
+                <p class="text-[13px] font-medium text-slate-500">
+                    {{ label }}
+                </p>
+                <p
+                    class="mt-1 text-[26px] font-semibold tracking-tight text-slate-900 tabular-nums"
+                >
+                    {{ value }}
+                </p>
+                <p
+                    v-if="helper"
+                    class="mt-1 text-xs font-medium"
+                    :class="toneClasses[props.tone].helper"
+                >
                     {{ helper }}
                 </p>
             </div>
