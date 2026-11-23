@@ -17,13 +17,13 @@ Entregar una vista operativa para consultar la asistencia diaria de empleados de
 
 ## Criterios de aceptación
 
-| Criterio | Estado |
-| --- | --- |
-| La vista diaria muestra retardos y horas extra | Cumplido |
-| Se pueden definir horarios por día | Cumplido |
-| Se pueden marcar días de descanso | Cumplido |
-| Se pueden filtrar registros por empleado y fecha | Cumplido |
-| Las correcciones se guardan | Cumplido para la demo local |
+| Criterio                                         | Estado                      |
+| ------------------------------------------------ | --------------------------- |
+| La vista diaria muestra retardos y horas extra   | Cumplido                    |
+| Se pueden definir horarios por día               | Cumplido                    |
+| Se pueden marcar días de descanso                | Cumplido                    |
+| Se pueden filtrar registros por empleado y fecha | Cumplido                    |
+| Las correcciones se guardan                      | Cumplido para la demo local |
 
 ## Consideraciones técnicas
 
