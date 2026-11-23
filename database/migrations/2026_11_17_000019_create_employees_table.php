@@ -31,7 +31,6 @@ return new class extends Migration
             $table->integer('updated_user_id')->nullable();
             $table->dateTime('deleted_at')->nullable();
             $table->integer('deleted_user_id')->nullable();
-            $table->primary(['id']);
             $table->unique(['id_user'], 'id_user');
             $table->index(['nationality_id'], 'fk_employees_nat');
             $table->index(['payroll_frequency_id'], 'fk_employees_freq');

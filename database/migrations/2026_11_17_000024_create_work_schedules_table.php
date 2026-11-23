@@ -27,7 +27,6 @@ return new class extends Migration
             $table->integer('updated_user_id')->nullable();
             $table->dateTime('deleted_at')->nullable();
             $table->integer('deleted_user_id')->nullable();
-            $table->primary(['id']);
             $table->unique(['employee_id', 'weekday', 'valid_from'], 'uq_work_schedules_emp_day_from');
             $table->foreign('employee_id', 'fk_work_schedules_employee')->references('id')->on('employees');
         });

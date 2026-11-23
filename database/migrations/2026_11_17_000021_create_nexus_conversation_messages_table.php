@@ -19,7 +19,6 @@ return new class extends Migration
             $table->text('content');
             $table->dateTime('created_at')->useCurrent();
             $table->dateTime('updated_at')->useCurrentOnUpdate()->nullable();
-            $table->primary(['id']);
             $table->index(['conversation_id'], 'fk_nexus_msg_conv');
             $table->foreign('conversation_id', 'fk_nexus_msg_conv')->references('id')->on('nexus_conversations');
         });
