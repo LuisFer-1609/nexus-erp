@@ -2,6 +2,215 @@
 
 @import 'tw-animate-css';
 
+/* Movimiento de Nexus (asistente). Solo transform y opacity; se apaga con prefers-reduced-motion. */
+@keyframes nexus-rise {
+    from {
+        opacity: 0;
+        transform: translateY(14px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+@keyframes nexus-message {
+    from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.985);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+@keyframes nexus-ring {
+    0% {
+        opacity: 0.6;
+        transform: scale(0.75);
+    }
+    100% {
+        opacity: 0;
+        transform: scale(1.7);
+    }
+}
+
+@keyframes nexus-float {
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-5px);
+    }
+}
+
+@keyframes nexus-wave {
+    0%,
+    60%,
+    100% {
+        opacity: 0.35;
+        transform: translateY(0);
+    }
+    30% {
+        opacity: 1;
+        transform: translateY(-4px);
+    }
+}
+
+.nexus-rise {
+    animation: nexus-rise 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.nexus-message {
+    animation: nexus-message 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.nexus-ring {
+    animation: nexus-ring 2.6s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+.nexus-float {
+    animation: nexus-float 4.5s ease-in-out infinite;
+}
+
+.nexus-wave {
+    animation: nexus-wave 1.2s ease-in-out infinite;
+}
+
+/* Respuesta de Nexus: cada línea o bloque se escribe de izquierda a derecha, uno tras otro.
+   Solo clip-path y opacity, sin JavaScript. */
+@keyframes nexus-write {
+    from {
+        clip-path: inset(-12% 100% -12% -12%);
+        opacity: 0.25;
+    }
+    to {
+        clip-path: inset(-12% -12% -12% -12%);
+        opacity: 1;
+    }
+}
+
+.nexus-reveal-body > * {
+    animation: nexus-write 1.2s cubic-bezier(0.45, 0, 0.2, 1) both;
+}
+
+.nexus-reveal-body > *:nth-child(2) {
+    animation-delay: 600ms;
+}
+.nexus-reveal-body > *:nth-child(3) {
+    animation-delay: 1200ms;
+}
+.nexus-reveal-body > *:nth-child(4) {
+    animation-delay: 1800ms;
+}
+.nexus-reveal-body > *:nth-child(5) {
+    animation-delay: 2400ms;
+}
+.nexus-reveal-body > *:nth-child(n + 6) {
+    animation-delay: 3000ms;
+}
+
+/* Mascota de Nexus: flota suave y parpadea (la pose de ojos cerrados aparece ~0.3 s cada 6 s). */
+@keyframes nexus-bob {
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-4%);
+    }
+}
+
+@keyframes nexus-blink {
+    0%,
+    94%,
+    98%,
+    100% {
+        opacity: 0;
+    }
+    95%,
+    97% {
+        opacity: 1;
+    }
+}
+
+@keyframes nexus-shadow {
+    0%,
+    100% {
+        transform: scaleX(1);
+        opacity: 0.55;
+    }
+    50% {
+        transform: scaleX(0.84);
+        opacity: 0.35;
+    }
+}
+
+.nexus-bob {
+    animation: nexus-bob 3.6s ease-in-out infinite;
+}
+
+.nexus-blink {
+    opacity: 0;
+    animation: nexus-blink 6s linear infinite;
+}
+
+.nexus-shadow {
+    animation: nexus-shadow 3.6s ease-in-out infinite;
+}
+
+/* Indicador de voz del dictado: barras que laten mientras se escucha. */
+@keyframes nexus-voice {
+    0%,
+    100% {
+        transform: scaleY(0.3);
+    }
+    50% {
+        transform: scaleY(1);
+    }
+}
+
+.nexus-voice-bar {
+    width: 3px;
+    height: 100%;
+    border-radius: 9999px;
+    background: currentColor;
+    animation: nexus-voice 0.9s ease-in-out infinite;
+}
+
+.nexus-voice-bar:nth-child(2) {
+    animation-delay: 0.15s;
+}
+
+.nexus-voice-bar:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+.nexus-voice-bar:nth-child(4) {
+    animation-delay: 0.45s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .nexus-rise,
+    .nexus-message,
+    .nexus-ring,
+    .nexus-float,
+    .nexus-wave,
+    .nexus-bob,
+    .nexus-blink,
+    .nexus-shadow,
+    .nexus-reveal-body > * {
+        animation: none;
+    }
+
+    .nexus-voice-bar {
+        animation: none;
+        transform: scaleY(0.6);
+    }
+}
+
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 
@@ -171,6 +380,25 @@
     }
 }
 
+@keyframes nexus-flash {
+    0% {
+        background-color: rgb(35 198 200 / 0.28);
+    }
+    100% {
+        background-color: transparent;
+    }
+}
+
+.nexus-flash {
+    animation: nexus-flash 1.5s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .nexus-flash {
+        animation: none;
+    }
+}
+
 /* Global NexusERP Directional Transitions & Skeleton Animations */
 @keyframes nexus-shimmer {
     0% {
@@ -182,12 +410,7 @@
 }
 
 .nexus-skeleton-shimmer {
-    background: linear-gradient(
-        90deg,
-        #f1f5f9 25%,
-        #e2e8f0 50%,
-        #f1f5f9 75%
-    );
+    background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
     background-size: 200% 100%;
     animation: nexus-shimmer 1.6s infinite ease-in-out;
 }

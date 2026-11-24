@@ -7,6 +7,7 @@
         "build:ssr": "vp build && vp build --ssr",
         "dev": "vp dev",
         "check": "vp check",
+        "whatsapp": "node --env-file=.env whatsapp-bridge/index.mjs",
         "check:fix": "vp check --fix",
         "types:check": "vue-tsc --noEmit"
     },

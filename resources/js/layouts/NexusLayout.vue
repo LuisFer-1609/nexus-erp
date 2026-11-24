@@ -13,12 +13,14 @@ import {
     Menu,
     Search,
     Settings,
+    Smartphone,
     UserRound,
     Users,
     WalletCards,
     X,
 } from '@lucide/vue';
 import { computed, onMounted, ref, watch } from 'vue';
+import NexusAssistantWidget from '@/components/nexus/NexusAssistantWidget.vue';
 import UserMenuContent from '@/components/UserMenuContent.vue';
 import {
     DropdownMenu,
@@ -36,7 +38,7 @@ type NavItem = {
 };
 
 type NavSection = {
-    key: 'crm' | 'payroll';
+    key: 'crm' | 'payroll' | 'ai';
     label: string;
     icon: Component;
     items: NavItem[];
@@ -49,6 +51,7 @@ const sidebarCollapsed = ref(false);
 const expandedSections = ref<Record<NavSection['key'], boolean>>({
     crm: true,
     payroll: true,
+    ai: true,
 });
 
 const user = computed(() => page.props.auth.user as User);
@@ -101,6 +104,13 @@ const navSections: NavSection[] = [
             { label: 'Pre-nómina', href: '/pre-nomina', icon: WalletCards },
         ],
     },
+    {
+        key: 'ai',
+        label: 'NEXUS IA',
+        icon: Bot,
+        paths: ['/ia'],
+        items: [{ label: 'WhatsApp', href: '/ia/whatsapp', icon: Smartphone }],
+    },
 ];
 
 const currentPath = computed(() => page.url.split('?')[0]);
@@ -147,6 +157,11 @@ watch(currentPath, (newPath, oldPath) => {
         routeTransitionDirection.value = 'up';
     }
 });
+
+// La pantalla del asistente ocupa toda la ventana (sin márgenes) y, al ser el chat
+// completo, el círculo flotante de Nexus se oculta en ella.
+const isAssistantPage = computed(() => currentPath.value === '/crm/asistente');
+const showAssistantWidget = computed(() => !isAssistantPage.value);
 
 const isActive = (href: string): boolean => {
     if (href === '/dashboard' || href === '/pre-nomina') {
@@ -456,7 +471,7 @@ watch(
             :class="sidebarCollapsed ? 'lg:pl-[72px]' : 'lg:pl-[232px]'"
         >
             <header
-                class="sticky top-0 z-30 flex h-16 items-center border-b border-slate-200 bg-white/95 px-4 backdrop-blur md:px-7"
+                class="sticky top-0 z-30 flex h-16 items-center border-b border-slate-200 bg-white px-4 md:px-7"
             >
                 <button
                     type="button"
@@ -542,17 +557,26 @@ watch(
             </header>
 
             <main
-                class="mx-auto w-full max-w-[1500px] px-4 py-6 md:px-8 md:py-7"
+                :class="
+                    isAssistantPage
+                        ? 'h-[calc(100dvh-4rem)] w-full overflow-hidden'
+                        : 'mx-auto w-full max-w-[1500px] px-4 py-6 md:px-8 md:py-7'
+                "
             >
                 <NexusViewTransition
                     :direction="routeTransitionDirection"
                     mode="out-in"
                 >
-                    <div :key="currentPath">
+                    <div
+                        :key="currentPath"
+                        :class="isAssistantPage ? 'h-full' : ''"
+                    >
                         <slot />
                     </div>
                 </NexusViewTransition>
             </main>
         </div>
+
+        <NexusAssistantWidget v-if="showAssistantWidget" />
     </div>
 </template>

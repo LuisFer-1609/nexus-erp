@@ -18,6 +18,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property int $id
  * @property string $name
  * @property string $email
+ * @property int|null $company_id
  * @property Carbon|null $email_verified_at
  * @property string $password
  * @property string|null $two_factor_secret
@@ -39,6 +40,9 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
      * (nexuserp.sql), que conserva su propia estructura.
      */
     public const TABLE = 'auth_users';
+
+    /** Empresa del usuario (la usa Nexus IA para limitar las consultas). */
+    public const COMPANY_ID = 'company_id';
 
     protected $table = self::TABLE;
 
