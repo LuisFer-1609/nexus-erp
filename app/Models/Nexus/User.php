@@ -6,6 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * Modelo de la tabla `users`.
+ *
+ * @property int $id
+ * @property string $name
+ * @property string|null $last_name
  */
 class User extends Model
 {
