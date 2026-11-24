@@ -29,6 +29,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import type { User } from '@/types';
 import type { Component } from 'vue';
+import NexusViewTransition from '@/components/nexus/NexusViewTransition.vue';
 
 type NavItem = {
     label: string;
@@ -113,6 +114,49 @@ const navSections: NavSection[] = [
 ];
 
 const currentPath = computed(() => page.url.split('?')[0]);
+const routeTransitionDirection = ref<'up' | 'down' | 'left' | 'right'>('up');
+
+const routeOrder = [
+    '/dashboard',
+    '/crm/leads',
+    '/crm/clientes',
+    '/crm/asistente',
+    '/crm/configuracion',
+    '/pre-nomina/empleados',
+    '/pre-nomina/asistencias',
+    '/pre-nomina',
+];
+
+watch(currentPath, (newPath, oldPath) => {
+    if (!oldPath || newPath === oldPath) {
+        return;
+    }
+
+    const oldIsPayroll = oldPath.startsWith('/pre-nomina');
+    const newIsPayroll = newPath.startsWith('/pre-nomina');
+
+    if (oldIsPayroll !== newIsPayroll) {
+        routeTransitionDirection.value = newIsPayroll ? 'left' : 'right';
+        return;
+    }
+
+    const oldIdx = routeOrder.findIndex((p) =>
+        p === '/dashboard' || p === '/pre-nomina'
+            ? oldPath === p
+            : oldPath.startsWith(p),
+    );
+    const newIdx = routeOrder.findIndex((p) =>
+        p === '/dashboard' || p === '/pre-nomina'
+            ? newPath === p
+            : newPath.startsWith(p),
+    );
+
+    if (oldIdx !== -1 && newIdx !== -1) {
+        routeTransitionDirection.value = newIdx > oldIdx ? 'up' : 'down';
+    } else {
+        routeTransitionDirection.value = 'up';
+    }
+});
 
 // La pantalla del asistente ocupa toda la ventana (sin márgenes) y, al ser el chat
 // completo, el círculo flotante de Nexus se oculta en ella.
@@ -519,12 +563,17 @@ watch(
                         : 'mx-auto w-full max-w-[1500px] px-4 py-6 md:px-8 md:py-7'
                 "
             >
-                <div
-                    class="animate-in duration-300 fade-in slide-in-from-bottom-1 motion-reduce:animate-none"
-                    :class="isAssistantPage ? 'h-full' : ''"
+                <NexusViewTransition
+                    :direction="routeTransitionDirection"
+                    mode="out-in"
                 >
-                    <slot />
-                </div>
+                    <div
+                        :key="currentPath"
+                        :class="isAssistantPage ? 'h-full' : ''"
+                    >
+                        <slot />
+                    </div>
+                </NexusViewTransition>
             </main>
         </div>
 
