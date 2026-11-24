@@ -30,6 +30,7 @@ return new class extends Migration
             $table->integer('updated_user_id')->nullable();
             $table->dateTime('deleted_at')->nullable();
             $table->integer('deleted_user_id')->nullable();
+            $table->primary(['id']);
             $table->index(['company_id'], 'fk_users_company');
             $table->index(['role_id'], 'fk_users_role');
             $table->foreign('company_id', 'fk_users_company')->references('id')->on('companies');

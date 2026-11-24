@@ -30,6 +30,7 @@ return new class extends Migration
             $table->integer('updated_user_id')->nullable();
             $table->dateTime('deleted_at')->nullable();
             $table->integer('deleted_user_id')->nullable();
+            $table->primary(['id']);
             $table->unique(['payroll_period_id', 'employee_id'], 'uq_payrolls_period_employee');
             $table->index(['employee_id'], 'fk_payrolls_employee');
             $table->foreign('employee_id', 'fk_payrolls_employee')->references('id')->on('employees');
