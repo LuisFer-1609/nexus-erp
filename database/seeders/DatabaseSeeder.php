@@ -14,6 +14,6 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Los datos iniciales se crean mediante las migraciones del proyecto.
+        $this->call(AdminUserSeeder::class);
     }
 }
