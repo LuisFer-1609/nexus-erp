@@ -22,6 +22,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/', [PreNominaController::class, 'index'])->name('index');
         Route::get('empleados', [PreNominaController::class, 'empleados'])->name('empleados');
         Route::get('asistencias', [PreNominaController::class, 'asistencias'])->name('asistencias');
+
+        // Endpoints Funcionales que persisten en la BD
+        Route::post('ajustar', [PreNominaController::class, 'guardarAjuste'])->name('ajustar');
+        Route::post('recalcular', [PreNominaController::class, 'recalcular'])->name('recalcular');
+        Route::post('crear-periodo', [PreNominaController::class, 'crearPeriodo'])->name('crear-periodo');
+        Route::post('cambiar-estado', [PreNominaController::class, 'cambiarEstado'])->name('cambiar-estado');
+        Route::post('aprobar-masivo', [PreNominaController::class, 'aprobarMasivo'])->name('aprobar-masivo');
     });
 });
 
