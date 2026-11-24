@@ -4,9 +4,24 @@ namespace Tests;
 
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Laravel\Fortify\Features;
+use RuntimeException;
 
 abstract class TestCase extends BaseTestCase
 {
+    public function createApplication()
+    {
+        $app = parent::createApplication();
+        $connection = $app['db']->connection();
+        $database = $connection->getDatabaseName();
+
+        if (! ($connection->getDriverName() === 'sqlite' && $database === ':memory:')
+            && ! preg_match('/^nexus[_-]erp[_-].*[_-]tests?$/', (string) $database)) {
+            throw new RuntimeException("Pruebas canceladas: la base '{$database}' no es una base aislada de pruebas.");
+        }
+
+        return $app;
+    }
+
     protected function setUp(): void
     {
         parent::setUp();
