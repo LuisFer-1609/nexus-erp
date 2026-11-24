@@ -16,7 +16,6 @@ class SaveMetaCampaigns
     public function save(int $companyId, int $userId, string $accountId, string $currency, string $token, string $since, string $until, array $campaignIds): array
     {
         $campaigns = collect($this->meta->campaigns($accountId, $token))
-            ->filter(fn (array $campaign) => (string) ($campaign['account_id'] ?? '') === $accountId)
             ->keyBy('id');
         $wanted = collect($campaignIds)->unique();
 

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\crm;
 use App\Http\Controllers\Controller;
 use App\Services\Crm\Meta\MetaAccess;
 use App\Services\Crm\Meta\MetaReadService;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -20,8 +21,10 @@ class MetaAssetController extends Controller
         $linked = DB::table('meta_pages')->where('company_id', $access->companyId($request))->pluck('external_id')->all();
 
         try {
-            $pages = $meta->pages($access->token($request));
-        } catch (RequestException) {
+            $connection = $access->connection($request);
+            abort_unless($connection !== null && $connection->business_id !== null, 409);
+            $pages = $meta->businessPages($connection->business_id, $access->token($request));
+        } catch (RequestException|ConnectionException) {
             return response()->json(['message' => 'No se pudieron consultar las páginas en Meta.'], 502);
         }
 
@@ -40,9 +43,11 @@ class MetaAssetController extends Controller
         $access->assertManage($request);
         $data = $request->validate(['account_id' => ['required', 'regex:/^\d+$/']]);
         try {
-            $account = collect($meta->adAccounts($access->token($request)))
+            $connection = $access->connection($request);
+            abort_unless($connection !== null && $connection->business_id !== null, 409);
+            $account = collect($meta->businessAdAccounts($connection->business_id, $access->token($request)))
                 ->firstWhere('id', $data['account_id']);
-        } catch (RequestException) {
+        } catch (RequestException|ConnectionException) {
             return back()->withErrors(['meta' => 'No se pudo verificar la cuenta en Meta.']);
         }
 
@@ -50,7 +55,7 @@ class MetaAssetController extends Controller
             throw ValidationException::withMessages(['account_id' => 'La cuenta no está disponible en esta conexión.']);
         }
 
-        $this->link('meta_ad_accounts', $access->companyId($request), (string) $account['id'], (string) $account['name']);
+        $this->link('meta_ad_accounts', $access->companyId($request), $connection->id, (string) $account['id'], (string) $account['name'], ['currency' => $account['currency']]);
 
         return back()->with('success', 'Cuenta publicitaria vinculada.');
     }
@@ -60,9 +65,11 @@ class MetaAssetController extends Controller
         $access->assertManage($request);
         $data = $request->validate(['page_id' => ['required', 'regex:/^\d+$/']]);
         try {
-            $page = collect($meta->pages($access->token($request)))
+            $connection = $access->connection($request);
+            abort_unless($connection !== null && $connection->business_id !== null, 409);
+            $page = collect($meta->businessPages($connection->business_id, $access->token($request)))
                 ->first(fn (array $item) => (string) $item['id'] === $data['page_id']);
-        } catch (RequestException) {
+        } catch (RequestException|ConnectionException) {
             return back()->withErrors(['meta' => 'No se pudo verificar la página en Meta.']);
         }
 
@@ -70,12 +77,13 @@ class MetaAssetController extends Controller
             throw ValidationException::withMessages(['page_id' => 'La página no está disponible en esta conexión.']);
         }
 
-        $this->link('meta_pages', $access->companyId($request), $data['page_id'], (string) $page['name']);
+        $this->link('meta_pages', $access->companyId($request), $connection->id, $data['page_id'], (string) $page['name']);
 
         return back()->with('success', 'Página vinculada para importar leads.');
     }
 
-    private function link(string $table, int $companyId, string $externalId, string $name): void
+    /** @param array<string, mixed> $extra */
+    private function link(string $table, int $companyId, int $connectionId, string $externalId, string $name, array $extra = []): void
     {
         $owner = DB::table($table)->where('external_id', $externalId)->first();
         if ($owner && (int) $owner->company_id !== $companyId) {
@@ -84,7 +92,7 @@ class MetaAssetController extends Controller
 
         DB::table($table)->updateOrInsert(
             ['external_id' => $externalId],
-            ['company_id' => $companyId, 'name' => $name, 'updated_at' => now(), 'created_at' => $owner ? $owner->created_at : now()],
+            ['company_id' => $companyId, 'meta_connection_id' => $connectionId, 'name' => $name, ...$extra, 'updated_at' => now(), 'created_at' => $owner ? $owner->created_at : now()],
         );
     }
 }

@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\crm;
 
 use App\Http\Controllers\Controller;
+use App\Models\Nexus\MetaConnection;
 use App\Services\Crm\Meta\MetaAccess;
 use App\Services\Crm\Meta\MetaReadService;
 use App\Services\Crm\Meta\SaveMetaCampaigns;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -23,7 +25,11 @@ class MetaCampaignController extends Controller
         return Inertia::render('crm/Campanas', [
             'companyName' => $request->user()->company->name,
             'canManage' => $access->canManage($request),
-            'hasConnection' => $access->connection($request) !== null,
+            'hasConnection' => $access->canManage($request)
+                ? $access->connection($request) !== null
+                : DB::table('meta_ad_accounts')->where('company_id', $access->companyId($request))->exists(),
+            'businessName' => $access->connection($request)?->business_name,
+            'metaConfigured' => (bool) (config('services.meta.app_id') && config('services.meta.app_secret')),
         ]);
     }
 
@@ -32,13 +38,20 @@ class MetaCampaignController extends Controller
         $access->assertReadable($request);
         $data = $request->validate($this->rangeRules());
         $access->assertLinkedAccount($request, $data['account_id']);
-        $token = $access->token($request);
+        $token = $access->tokenForAccount($request, $data['account_id']);
 
         try {
             $campaigns = $meta->campaigns($data['account_id'], $token);
-            $insights = collect($meta->insights($data['account_id'], $token, $data['since'], $data['until']))->keyBy('campaign_id');
-        } catch (RequestException) {
+        } catch (RequestException|ConnectionException) {
             return response()->json(['message' => 'No se pudieron consultar las campañas en Meta.'], 502);
+        }
+
+        $metricsError = false;
+        try {
+            $insights = collect($meta->insights($data['account_id'], $token, $data['since'], $data['until']))->keyBy('campaign_id');
+        } catch (RequestException|ConnectionException) {
+            $insights = collect();
+            $metricsError = true;
         }
 
         $saved = DB::table('meta_saved_campaigns')
@@ -48,7 +61,7 @@ class MetaCampaignController extends Controller
             ->where('period_end', $data['until'])
             ->pluck('meta_campaign_id')->all();
 
-        return response()->json(['data' => array_values(array_map(
+        return response()->json(['metrics_error' => $metricsError, 'data' => array_values(array_map(
             fn (array $campaign) => [
                 'id' => (string) $campaign['id'],
                 'name' => (string) $campaign['name'],
@@ -58,7 +71,7 @@ class MetaCampaignController extends Controller
                 'metrics' => $insights->get((string) $campaign['id'], []),
                 'saved' => in_array((string) $campaign['id'], $saved, true),
             ],
-            array_filter($campaigns, fn (array $campaign) => (string) ($campaign['account_id'] ?? '') === $data['account_id']),
+            $campaigns,
         ))]);
     }
 
@@ -71,9 +84,11 @@ class MetaCampaignController extends Controller
             'campaign_ids.*' => ['required', 'regex:/^\d+$/'],
         ]);
         $access->assertLinkedAccount($request, $data['account_id']);
-        $token = $access->token($request);
+        $token = $access->tokenForAccount($request, $data['account_id']);
         try {
-            $account = collect($meta->adAccounts($token))->firstWhere('id', $data['account_id']);
+            $connection = MetaConnection::query()->where('company_id', $access->companyId($request))
+                ->whereKey(DB::table('meta_ad_accounts')->where('company_id', $access->companyId($request))->where('external_id', $data['account_id'])->value('meta_connection_id'))->firstOrFail();
+            $account = collect($meta->businessAdAccounts($connection->business_id, $token))->firstWhere('id', $data['account_id']);
             abort_unless($account !== null, 403);
             $counts = $saver->save(
                 $access->companyId($request),
@@ -85,7 +100,7 @@ class MetaCampaignController extends Controller
                 $data['until'],
                 $data['campaign_ids'],
             );
-        } catch (RequestException) {
+        } catch (RequestException|ConnectionException) {
             return back()->withErrors(['meta' => 'No se pudieron guardar las campañas porque Meta no respondió.']);
         }
 

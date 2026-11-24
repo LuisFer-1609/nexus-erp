@@ -34,7 +34,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::prefix('crm')->name('crm.')->middleware(EnsureCompanyRole::class.':Administrador,Marketing')->group(function () {
             Route::get('meta/ad-accounts', [MetaReadController::class, 'adAccounts'])->name('meta.ad-accounts.index');
-            Route::post('meta/connection', [MetaConnectionController::class, 'store'])->name('meta.connection.store');
+            Route::get('meta/oauth/redirect', [MetaConnectionController::class, 'redirect'])->name('meta.oauth.redirect');
+            Route::get('meta/oauth/callback', [MetaConnectionController::class, 'callback'])->name('meta.oauth.callback');
+            Route::get('meta/businesses', [MetaConnectionController::class, 'businesses'])->name('meta.businesses.index');
+            Route::post('meta/business', [MetaConnectionController::class, 'selectBusiness'])->name('meta.business.select');
             Route::get('meta/pages', [MetaAssetController::class, 'pages'])->name('meta.pages.index');
             Route::post('meta/ad-accounts', [MetaAssetController::class, 'linkAccount'])->name('meta.ad-accounts.link');
             Route::post('meta/pages', [MetaAssetController::class, 'linkPage'])->name('meta.pages.link');

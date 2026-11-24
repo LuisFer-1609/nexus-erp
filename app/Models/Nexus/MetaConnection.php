@@ -3,7 +3,9 @@
 namespace App\Models\Nexus;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
+/** @property Carbon|null $expires_at */
 class MetaConnection extends Model
 {
     protected $table = 'meta_connections';
@@ -12,6 +14,6 @@ class MetaConnection extends Model
 
     protected function casts(): array
     {
-        return ['access_token' => 'encrypted'];
+        return ['access_token' => 'encrypted', 'expires_at' => 'datetime'];
     }
 }

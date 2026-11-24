@@ -30,13 +30,38 @@ class MetaAccess
 
     public function connection(Request $request): ?MetaConnection
     {
-        return MetaConnection::query()->where('company_id', $this->companyId($request))->first();
+        return MetaConnection::query()
+            ->where('company_id', $this->companyId($request))
+            ->where('auth_user_id', $request->user()->id)
+            ->first();
     }
 
     public function token(Request $request): string
     {
         $connection = $this->connection($request);
-        abort_unless($connection !== null, 409, 'La empresa todavía no tiene una conexión con Meta.');
+        abort_unless($connection !== null && $connection->business_id !== null, 409, 'Conecta un Business Manager de Meta.');
+
+        return $this->tokenForConnection($connection);
+    }
+
+    public function tokenForAccount(Request $request, string $accountId): string
+    {
+        $connectionId = DB::table('meta_ad_accounts')
+            ->where('company_id', $this->companyId($request))
+            ->where('external_id', $accountId)
+            ->value('meta_connection_id');
+        $connection = MetaConnection::query()
+            ->where('company_id', $this->companyId($request))
+            ->whereKey($connectionId)
+            ->first();
+        abort_unless($connection !== null && $connection->business_id !== null, 409, 'Reconecta esta cuenta con Meta.');
+
+        return $this->tokenForConnection($connection);
+    }
+
+    private function tokenForConnection(MetaConnection $connection): string
+    {
+        abort_if($connection->expires_at && $connection->expires_at->isPast(), 409, 'La conexión de Meta expiró. El administrador debe reconectarla.');
 
         return $connection->access_token;
     }

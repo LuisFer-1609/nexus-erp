@@ -9,6 +9,15 @@ interface MetaClient
      */
     public function adAccounts(?string $accessToken = null): array;
 
+    /** @return array<int, array<string, mixed>> */
+    public function businesses(string $accessToken): array;
+
+    /** @return array<int, array<string, mixed>> */
+    public function businessAdAccounts(string $businessId, string $accessToken): array;
+
+    /** @return array<int, array<string, mixed>> */
+    public function businessPages(string $businessId, string $accessToken): array;
+
     /**
      * @return array<int, array<string, mixed>>
      */

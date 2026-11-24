@@ -13,9 +13,36 @@ class GraphMetaAdapter implements MetaClient
      */
     public function adAccounts(?string $accessToken = null): array
     {
-        return $this->fetchAll('me/adaccounts', $accessToken ?? (string) config('services.meta.access_token'), [
+        return $this->fetchAll('me/adaccounts', (string) $accessToken, [
             'fields' => 'id,account_id,name,account_status,currency,timezone_name',
         ]);
+    }
+
+    public function businesses(string $accessToken): array
+    {
+        return $this->fetchAll('me/businesses', $accessToken, ['fields' => 'id,name']);
+    }
+
+    public function businessAdAccounts(string $businessId, string $accessToken): array
+    {
+        $this->assertId($businessId);
+        $fields = ['fields' => 'id,account_id,name,account_status,currency,timezone_name'];
+
+        return $this->mergeAssets(
+            $this->fetchAll("{$businessId}/owned_ad_accounts", $accessToken, $fields),
+            $this->fetchAll("{$businessId}/client_ad_accounts", $accessToken, $fields),
+        );
+    }
+
+    public function businessPages(string $businessId, string $accessToken): array
+    {
+        $this->assertId($businessId);
+        $fields = ['fields' => 'id,name'];
+
+        return $this->mergeAssets(
+            $this->fetchAll("{$businessId}/owned_pages", $accessToken, $fields),
+            $this->fetchAll("{$businessId}/client_pages", $accessToken, $fields),
+        );
     }
 
     public function pages(string $accessToken): array
@@ -98,6 +125,15 @@ class GraphMetaAdapter implements MetaClient
         if (! preg_match('/^\d+$/', $id)) {
             throw new RuntimeException('Identificador de Meta no válido.');
         }
+    }
+
+    /** @param array<int, array<string, mixed>> $owned
+     * @param  array<int, array<string, mixed>>  $client
+     * @return array<int, array<string, mixed>>
+     */
+    private function mergeAssets(array $owned, array $client): array
+    {
+        return array_values(collect([...$owned, ...$client])->unique('id')->all());
     }
 
     private function baseUrl(): string

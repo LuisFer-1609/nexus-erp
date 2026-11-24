@@ -17,7 +17,10 @@ return [
     'meta' => [
         'url' => env('META_GRAPH_URL', 'https://graph.facebook.com'),
         'version' => env('META_GRAPH_VERSION', 'v27.0'),
-        'access_token' => env('META_ACCESS_TOKEN'),
+        'app_id' => env('META_APP_ID'),
+        'app_secret' => env('META_APP_SECRET'),
+        'login_config_id' => env('META_LOGIN_CONFIG_ID'),
+        'redirect_uri' => env('META_REDIRECT_URI'),
     ],
 
     'postmark' => [

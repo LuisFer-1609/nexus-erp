@@ -16,8 +16,8 @@ class ImportMetaLeads
     {
         $totals = ['imported' => 0, 'failed_pages' => 0];
 
-        foreach (MetaConnection::query()->get() as $connection) {
-            $result = $this->company((int) $connection->company_id);
+        foreach (DB::table('meta_pages')->distinct()->pluck('company_id') as $companyId) {
+            $result = $this->company((int) $companyId);
             $totals['imported'] += $result['imported'];
             $totals['failed_pages'] += $result['failed_pages'];
         }
@@ -28,11 +28,14 @@ class ImportMetaLeads
     /** @return array{imported: int, failed_pages: int} */
     public function company(int $companyId): array
     {
-        $connection = MetaConnection::query()->where('company_id', $companyId)->firstOrFail();
         $totals = ['imported' => 0, 'failed_pages' => 0];
 
         foreach (DB::table('meta_pages')->where('company_id', $companyId)->get() as $page) {
             try {
+                $connection = MetaConnection::query()->where('company_id', $companyId)->whereKey($page->meta_connection_id)->firstOrFail();
+                if ($connection->expires_at && $connection->expires_at->isPast()) {
+                    throw new \RuntimeException('Meta expiró.');
+                }
                 foreach ($this->meta->leadForms($page->external_id, $connection->access_token) as $form) {
                     foreach ($this->meta->formLeads((string) $form['id'], $connection->access_token) as $lead) {
                         $totals['imported'] += $this->insert($companyId, $page->external_id, $lead);

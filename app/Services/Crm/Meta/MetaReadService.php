@@ -13,6 +13,32 @@ class MetaReadService
      */
     public function adAccounts(?string $accessToken = null): array
     {
+        return $this->normalizeAccounts($this->metaClient->adAccounts($accessToken));
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    public function businesses(string $accessToken): array
+    {
+        return $this->metaClient->businesses($accessToken);
+    }
+
+    /** @return array<int, array<string, int|string>> */
+    public function businessAdAccounts(string $businessId, string $accessToken): array
+    {
+        return $this->normalizeAccounts($this->metaClient->businessAdAccounts($businessId, $accessToken));
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    public function businessPages(string $businessId, string $accessToken): array
+    {
+        return $this->metaClient->businessPages($businessId, $accessToken);
+    }
+
+    /** @param array<int, array<string, mixed>> $accounts
+     * @return array<int, array<string, int|string>>
+     */
+    private function normalizeAccounts(array $accounts): array
+    {
         return array_map(
             fn (array $account): array => [
                 'id' => (string) $account['account_id'],
@@ -22,7 +48,7 @@ class MetaReadService
                 'currency' => (string) $account['currency'],
                 'timezone' => (string) $account['timezone_name'],
             ],
-            $this->metaClient->adAccounts($accessToken),
+            $accounts,
         );
     }
 

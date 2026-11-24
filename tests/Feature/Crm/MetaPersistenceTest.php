@@ -11,19 +11,22 @@ function metaCompanyUser(): array
     $companyId = DB::table('companies')->insertGetId(['name' => 'Acme']);
     $roleId = DB::table('roles')->insertGetId(['name' => 'Administrador', 'created_at' => now()]);
     $user = User::factory()->create(['company_id' => $companyId, 'role_id' => $roleId]);
-    MetaConnection::query()->create([
+    $connection = MetaConnection::query()->create([
         'company_id' => $companyId,
+        'auth_user_id' => $user->id,
+        'business_id' => '555',
         'access_token' => 'test-token',
         'token_fingerprint' => hash('sha256', 'test-token'),
     ]);
 
-    return [$companyId, $user];
+    return [$companyId, $user, $connection->id];
 }
 
 test('saving visible campaigns inserts once and only updates changed metrics', function () {
-    [$companyId, $user] = metaCompanyUser();
+    [$companyId, $user, $connectionId] = metaCompanyUser();
     DB::table('meta_ad_accounts')->insert([
         'company_id' => $companyId,
+        'meta_connection_id' => $connectionId,
         'external_id' => '123',
         'name' => 'Cuenta',
         'created_at' => now(), 'updated_at' => now(),
@@ -31,11 +34,14 @@ test('saving visible campaigns inserts once and only updates changed metrics', f
 
     $spend = '10.00';
     Http::fake(function ($request) use (&$spend) {
-        if (str_contains($request->url(), '/me/adaccounts')) {
+        if (str_contains($request->url(), '/555/owned_ad_accounts')) {
             return Http::response(['data' => [[
                 'id' => 'act_123', 'account_id' => '123', 'name' => 'Cuenta',
                 'account_status' => 1, 'currency' => 'MXN', 'timezone_name' => 'America/Mexico_City',
             ]]]);
+        }
+        if (str_contains($request->url(), '/555/client_ad_accounts')) {
+            return Http::response(['data' => []]);
         }
         if (str_contains($request->url(), '/act_123/campaigns')) {
             return Http::response(['data' => [
@@ -67,9 +73,9 @@ test('saving visible campaigns inserts once and only updates changed metrics', f
 });
 
 test('lead import is idempotent and preserves CRM edits', function () {
-    [$companyId] = metaCompanyUser();
+    [$companyId, , $connectionId] = metaCompanyUser();
     DB::table('meta_pages')->insert([
-        'company_id' => $companyId, 'external_id' => '555', 'name' => 'Página',
+        'company_id' => $companyId, 'meta_connection_id' => $connectionId, 'external_id' => '555', 'name' => 'Página',
         'created_at' => now(), 'updated_at' => now(),
     ]);
     Http::fake([
@@ -92,9 +98,9 @@ test('lead import is idempotent and preserves CRM edits', function () {
 });
 
 test('a user from another company cannot save campaigns from a linked account', function () {
-    [$companyId] = metaCompanyUser();
+    [$companyId, , $connectionId] = metaCompanyUser();
     DB::table('meta_ad_accounts')->insert([
-        'company_id' => $companyId, 'external_id' => '123', 'name' => 'Cuenta',
+        'company_id' => $companyId, 'meta_connection_id' => $connectionId, 'external_id' => '123', 'name' => 'Cuenta',
         'created_at' => now(), 'updated_at' => now(),
     ]);
     $otherCompanyId = DB::table('companies')->insertGetId(['name' => 'Otra empresa']);
@@ -107,4 +113,20 @@ test('a user from another company cannot save campaigns from a linked account', 
     ])->assertForbidden();
 
     expect(DB::table('meta_saved_campaigns')->count())->toBe(0);
+});
+
+test('campaigns remain visible if only the metrics request fails', function () {
+    [$companyId, $user, $connectionId] = metaCompanyUser();
+    DB::table('meta_ad_accounts')->insert([
+        'company_id' => $companyId, 'meta_connection_id' => $connectionId,
+        'external_id' => '123', 'name' => 'Cuenta', 'created_at' => now(), 'updated_at' => now(),
+    ]);
+    Http::fake([
+        '*/act_123/campaigns*' => Http::response(['data' => [['id' => '456', 'name' => 'Campaña A', 'status' => 'ACTIVE']]]),
+        '*/act_123/insights*' => Http::response(['error' => ['message' => 'Sin métricas']], 500),
+    ]);
+
+    $this->actingAs($user)->getJson('/crm/meta/campaigns?account_id=123&since=2026-11-01&until=2026-11-23')
+        ->assertOk()->assertJsonPath('data.0.name', 'Campaña A')
+        ->assertJsonPath('metrics_error', true);
 });
