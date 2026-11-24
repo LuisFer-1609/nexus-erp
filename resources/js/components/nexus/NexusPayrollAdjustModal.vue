@@ -1,5 +1,15 @@
 <script setup lang="ts">
-import { CheckCircle2, RotateCcw, SlidersHorizontal, X } from '@lucide/vue';
+import {
+    AlertCircle,
+    CheckCircle2,
+    DollarSign,
+    Info,
+    RotateCcw,
+    SlidersHorizontal,
+    TrendingDown,
+    TrendingUp,
+    X,
+} from '@lucide/vue';
 import { computed, ref, watch } from 'vue';
 import NexusBadge from '@/components/nexus/NexusBadge.vue';
 import NexusViewTransition from '@/components/nexus/NexusViewTransition.vue';
@@ -23,6 +33,10 @@ const days = ref(10);
 const delays = ref(0);
 const absences = ref(0);
 const extra = ref(0);
+const bonus = ref(0);
+const customPerceptions = ref(0);
+const customDeductions = ref(0);
+const adjustmentReason = ref('');
 const statusOverride = ref<'auto' | 'Correcto' | 'Revisar'>('auto');
 
 watch(
@@ -35,6 +49,10 @@ watch(
         delays.value = emp.delays;
         absences.value = emp.absences;
         extra.value = emp.extra;
+        bonus.value = emp.concepts?.bonus ?? 0;
+        customPerceptions.value = emp.concepts?.customPerceptions ?? 0;
+        customDeductions.value = emp.concepts?.customDeductions ?? 0;
+        adjustmentReason.value = emp.concepts?.adjustmentReason ?? '';
         statusOverride.value = 'auto';
     },
     { immediate: true },
@@ -49,6 +67,10 @@ const previewRow = computed<PayrollRow | null>(() => {
         delays: delays.value,
         absences: absences.value,
         extra: extra.value,
+        bonus: bonus.value,
+        customPerceptions: customPerceptions.value,
+        customDeductions: customDeductions.value,
+        adjustmentReason: adjustmentReason.value,
         status:
             statusOverride.value === 'auto' ? undefined : statusOverride.value,
     });
@@ -62,6 +84,10 @@ const resetDefaults = (): void => {
     delays.value = props.employee.delays;
     absences.value = props.employee.absences;
     extra.value = props.employee.extra;
+    bonus.value = props.employee.concepts?.bonus ?? 0;
+    customPerceptions.value = 0;
+    customDeductions.value = 0;
+    adjustmentReason.value = '';
     statusOverride.value = 'auto';
 };
 
@@ -85,13 +111,14 @@ const handleSave = (): void => {
         >
             <div
                 v-if="open && employee && previewRow"
-                class="fixed inset-0 z-50 flex justify-end bg-slate-950/35 backdrop-blur-[2px]"
+                class="fixed inset-0 z-50 flex justify-end bg-slate-950/40 backdrop-blur-[2px]"
                 @click.self="emit('close')"
             >
                 <NexusViewTransition direction="left" appear>
                     <aside
-                        class="flex h-full w-full max-w-md flex-col border-l border-slate-200 bg-white shadow-2xl"
+                        class="flex h-full w-full max-w-lg flex-col border-l border-slate-200 bg-white shadow-2xl"
                     >
+                        <!-- Header -->
                         <div
                             class="flex items-center justify-between border-b border-slate-100 px-6 py-5"
                         >
@@ -105,17 +132,16 @@ const handleSave = (): void => {
                                     <h3
                                         class="text-sm font-semibold text-slate-900"
                                     >
-                                        Ajustar pre-nómina
+                                        Ajuste Manual por Concepto
                                     </h3>
-                                    <p class="text-[11px] text-slate-500">
-                                        {{ employee.name }}
+                                    <p class="text-xs text-slate-500">
+                                        Modifica incidencias y montos de pre-nómina
                                     </p>
                                 </div>
                             </div>
-
                             <button
                                 type="button"
-                                class="rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+                                class="inline-flex size-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700"
                                 aria-label="Cerrar panel"
                                 @click="emit('close')"
                             >
@@ -123,226 +149,249 @@ const handleSave = (): void => {
                             </button>
                         </div>
 
-                        <div class="flex-1 space-y-5 overflow-y-auto p-6">
+                        <!-- Body (Scrollable) -->
+                        <div
+                            class="flex-1 space-y-6 overflow-y-auto px-6 py-5 text-xs text-slate-700"
+                        >
+                            <!-- Tarjeta de Identificación del Empleado -->
                             <div
-                                class="grid grid-cols-2 gap-4 rounded-xl border border-slate-200/80 bg-slate-50/70 p-4"
+                                class="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50/80 p-3.5"
                             >
-                                <div>
-                                    <p
-                                        class="text-[10px] font-medium text-slate-500"
+                                <div class="flex items-center gap-3">
+                                    <div
+                                        class="flex size-10 items-center justify-center rounded-full bg-slate-900 text-xs font-semibold text-white"
                                     >
-                                        Percepción estimada
-                                    </p>
-                                    <NexusViewTransition
-                                        direction="up"
-                                        mode="out-in"
-                                    >
-                                        <p
-                                            :key="previewRow.perceptions"
-                                            class="mt-0.5 text-base font-bold text-emerald-600"
-                                        >
-                                            {{
-                                                formatCurrency(
-                                                    previewRow.perceptions,
-                                                )
-                                            }}
-                                        </p>
-                                    </NexusViewTransition>
-                                </div>
-                                <div>
-                                    <p
-                                        class="text-[10px] font-medium text-slate-500"
-                                    >
-                                        Deducción aplicada
-                                    </p>
-                                    <NexusViewTransition
-                                        direction="down"
-                                        mode="out-in"
-                                    >
-                                        <p
-                                            :key="previewRow.deductions"
-                                            class="mt-0.5 text-base font-bold text-rose-500"
-                                        >
-                                            {{
-                                                formatCurrency(
-                                                    previewRow.deductions,
-                                                )
-                                            }}
-                                        </p>
-                                    </NexusViewTransition>
-                                </div>
-                                <div
-                                    class="col-span-2 flex items-center justify-between border-t border-slate-200/80 pt-3"
-                                >
-                                    <div>
-                                        <p
-                                            class="text-[10px] font-medium text-slate-500"
-                                        >
-                                            Neto resultante
-                                        </p>
-                                        <NexusViewTransition
-                                            direction="up"
-                                            mode="out-in"
-                                        >
-                                            <p
-                                                :key="previewRow.net"
-                                                class="text-lg font-bold text-slate-900"
-                                            >
-                                                {{
-                                                    formatCurrency(
-                                                        previewRow.net,
-                                                    )
-                                                }}
-                                            </p>
-                                        </NexusViewTransition>
+                                        {{ employee.initials ?? 'EM' }}
                                     </div>
-                                    <NexusBadge
-                                        :label="previewRow.status"
-                                        :tone="previewRow.tone"
-                                    />
+                                    <div>
+                                        <p class="font-semibold text-slate-900 text-sm">
+                                            {{ employee.name }}
+                                        </p>
+                                        <p class="text-[11px] text-slate-500">
+                                            {{ employee.area ?? 'General' }} • Salario Diario: {{ formatCurrency(employee.dailyRate) }}
+                                        </p>
+                                    </div>
+                                </div>
+                                <NexusBadge :tone="previewRow.tone">
+                                    {{ previewRow.status }}
+                                </NexusBadge>
+                            </div>
+
+                            <!-- Sección 1: Asistencias e Incidencias Base -->
+                            <div class="space-y-3">
+                                <h4 class="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                                    1. Asistencias e Incidencias
+                                </h4>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="mb-1 block font-medium text-slate-700">
+                                            Días trabajados
+                                        </label>
+                                        <input
+                                            v-model.number="days"
+                                            type="number"
+                                            min="0"
+                                            max="31"
+                                            class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800 focus:border-[#23c6c8] focus:outline-none focus:ring-1 focus:ring-[#23c6c8]"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label class="mb-1 block font-medium text-slate-700">
+                                            Horas extra
+                                        </label>
+                                        <input
+                                            v-model.number="extra"
+                                            type="number"
+                                            step="0.5"
+                                            min="0"
+                                            class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800 focus:border-[#23c6c8] focus:outline-none focus:ring-1 focus:ring-[#23c6c8]"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label class="mb-1 block font-medium text-slate-700">
+                                            Retardos registrados
+                                        </label>
+                                        <input
+                                            v-model.number="delays"
+                                            type="number"
+                                            min="0"
+                                            class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800 focus:border-[#23c6c8] focus:outline-none focus:ring-1 focus:ring-[#23c6c8]"
+                                        />
+                                        <span class="text-[10px] text-slate-400">$50 MXN sanción c/u</span>
+                                    </div>
+                                    <div>
+                                        <label class="mb-1 block font-medium text-slate-700">
+                                            Faltas injustificadas
+                                        </label>
+                                        <input
+                                            v-model.number="absences"
+                                            type="number"
+                                            min="0"
+                                            class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800 focus:border-[#23c6c8] focus:outline-none focus:ring-1 focus:ring-[#23c6c8]"
+                                        />
+                                        <span class="text-[10px] text-slate-400">Descuento de día completo</span>
+                                    </div>
                                 </div>
                             </div>
 
-                            <div class="grid grid-cols-2 gap-4">
-                                <label class="block">
-                                    <span
-                                        class="mb-1.5 block text-[11px] font-medium text-slate-700"
-                                    >
-                                        Días trabajados
-                                    </span>
-                                    <input
-                                        v-model.number="days"
-                                        type="number"
-                                        min="0"
-                                        max="15"
-                                        step="1"
-                                        class="h-9 w-full rounded-lg border border-slate-200 bg-white px-3 text-xs text-slate-800 transition outline-none focus:border-[#23c6c8] focus:ring-2 focus:ring-[#23c6c8]/15"
-                                    />
-                                </label>
+                            <!-- Sección 2: Ajuste Manual de Conceptos Financieros -->
+                            <div class="space-y-3">
+                                <h4 class="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                                    2. Conceptos Extras y Ajustes Manuales
+                                </h4>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="mb-1 block font-medium text-emerald-800 flex items-center gap-1">
+                                            <TrendingUp class="size-3.5 text-emerald-600" />
+                                            Bono de Desempeño
+                                        </label>
+                                        <div class="relative">
+                                            <span class="absolute left-3 top-2 text-slate-400">$</span>
+                                            <input
+                                                v-model.number="bonus"
+                                                type="number"
+                                                min="0"
+                                                class="w-full rounded-lg border border-slate-200 pl-7 pr-3 py-2 text-sm text-slate-800 focus:border-[#23c6c8] focus:outline-none focus:ring-1 focus:ring-[#23c6c8]"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="mb-1 block font-medium text-emerald-800 flex items-center gap-1">
+                                            <DollarSign class="size-3.5 text-emerald-600" />
+                                            Percepciones Extras
+                                        </label>
+                                        <div class="relative">
+                                            <span class="absolute left-3 top-2 text-slate-400">$</span>
+                                            <input
+                                                v-model.number="customPerceptions"
+                                                type="number"
+                                                min="0"
+                                                placeholder="0"
+                                                class="w-full rounded-lg border border-slate-200 pl-7 pr-3 py-2 text-sm text-slate-800 focus:border-[#23c6c8] focus:outline-none focus:ring-1 focus:ring-[#23c6c8]"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
 
-                                <label class="block">
-                                    <span
-                                        class="mb-1.5 block text-[11px] font-medium text-slate-700"
-                                    >
-                                        Horas extra
-                                    </span>
-                                    <input
-                                        v-model.number="extra"
-                                        type="number"
-                                        min="0"
-                                        max="40"
-                                        step="0.5"
-                                        class="h-9 w-full rounded-lg border border-slate-200 bg-white px-3 text-xs text-slate-800 transition outline-none focus:border-[#23c6c8] focus:ring-2 focus:ring-[#23c6c8]/15"
-                                    />
-                                </label>
+                                <div>
+                                    <label class="mb-1 block font-medium text-rose-800 flex items-center gap-1">
+                                        <TrendingDown class="size-3.5 text-rose-600" />
+                                        Deducciones Extras Manuales
+                                    </label>
+                                    <div class="relative">
+                                        <span class="absolute left-3 top-2 text-slate-400">$</span>
+                                        <input
+                                            v-model.number="customDeductions"
+                                            type="number"
+                                            min="0"
+                                            placeholder="0"
+                                            class="w-full rounded-lg border border-slate-200 pl-7 pr-3 py-2 text-sm text-slate-800 focus:border-rose-400 focus:outline-none focus:ring-1 focus:ring-rose-400"
+                                        />
+                                    </div>
+                                    <span class="text-[10px] text-slate-400">Préstamos, anticipos o cargos administrativos</span>
+                                </div>
 
-                                <label class="block">
-                                    <span
-                                        class="mb-1.5 block text-[11px] font-medium text-slate-700"
-                                    >
-                                        Retardos (Ret.)
-                                    </span>
-                                    <input
-                                        v-model.number="delays"
-                                        type="number"
-                                        min="0"
-                                        max="15"
-                                        step="1"
-                                        class="h-9 w-full rounded-lg border border-slate-200 bg-white px-3 text-xs text-slate-800 transition outline-none focus:border-[#23c6c8] focus:ring-2 focus:ring-[#23c6c8]/15"
-                                    />
-                                </label>
-
-                                <label class="block">
-                                    <span
-                                        class="mb-1.5 block text-[11px] font-medium text-slate-700"
-                                    >
-                                        Faltas
-                                    </span>
-                                    <input
-                                        v-model.number="absences"
-                                        type="number"
-                                        min="0"
-                                        max="15"
-                                        step="1"
-                                        class="h-9 w-full rounded-lg border border-slate-200 bg-white px-3 text-xs text-slate-800 transition outline-none focus:border-[#23c6c8] focus:ring-2 focus:ring-[#23c6c8]/15"
-                                    />
-                                </label>
+                                <div>
+                                    <label class="mb-1 block font-medium text-slate-700">
+                                        Motivo del ajuste / Observaciones
+                                    </label>
+                                    <textarea
+                                        v-model="adjustmentReason"
+                                        rows="2"
+                                        placeholder="Ej. Se autoriza compensación de transporte o corrección de chequeo..."
+                                        class="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs text-slate-800 focus:border-[#23c6c8] focus:outline-none focus:ring-1 focus:ring-[#23c6c8]"
+                                    ></textarea>
+                                </div>
                             </div>
 
-                            <div>
-                                <span
-                                    class="mb-2 block text-[11px] font-medium text-slate-700"
-                                >
-                                    Validación de estado
-                                </span>
-                                <div class="grid grid-cols-3 gap-2">
-                                    <button
-                                        type="button"
-                                        class="h-8 rounded-lg border text-[11px] font-medium transition"
-                                        :class="
-                                            statusOverride === 'auto'
-                                                ? 'border-[#23c6c8] bg-cyan-50/60 text-[#139b9e]'
-                                                : 'border-slate-200 text-slate-600 hover:bg-slate-50'
-                                        "
-                                        @click="statusOverride = 'auto'"
-                                    >
-                                        Automático
-                                    </button>
-                                    <button
-                                        type="button"
-                                        class="h-8 rounded-lg border text-[11px] font-medium transition"
-                                        :class="
-                                            statusOverride === 'Correcto'
-                                                ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
-                                                : 'border-slate-200 text-slate-600 hover:bg-slate-50'
-                                        "
-                                        @click="statusOverride = 'Correcto'"
-                                    >
-                                        Correcto
-                                    </button>
-                                    <button
-                                        type="button"
-                                        class="h-8 rounded-lg border text-[11px] font-medium transition"
-                                        :class="
-                                            statusOverride === 'Revisar'
-                                                ? 'border-amber-500 bg-amber-50 text-amber-700'
-                                                : 'border-slate-200 text-slate-600 hover:bg-slate-50'
-                                        "
-                                        @click="statusOverride = 'Revisar'"
-                                    >
-                                        Revisar
-                                    </button>
+                            <!-- Sección 3: Resumen del Cálculo en Vivo -->
+                            <div class="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-2.5">
+                                <h4 class="font-semibold text-slate-800 flex items-center gap-1.5 text-xs">
+                                    <Info class="size-3.5 text-[#139b9e]" />
+                                    Desglose de cálculo en vivo
+                                </h4>
+                                <div class="space-y-1.5 border-t border-slate-200 pt-2 text-slate-600 text-[11px]">
+                                    <div class="flex justify-between">
+                                        <span>Sueldo Base ({{ days }} días):</span>
+                                        <span class="font-medium text-slate-900">{{ formatCurrency(previewRow.concepts?.salary ?? 0) }}</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span>Horas Extra ({{ extra }}h):</span>
+                                        <span class="font-medium text-slate-900">+{{ formatCurrency(previewRow.concepts?.overtime ?? 0) }}</span>
+                                    </div>
+                                    <div v-if="bonus > 0" class="flex justify-between text-emerald-700">
+                                        <span>Bono de Desempeño:</span>
+                                        <span class="font-medium">+{{ formatCurrency(bonus) }}</span>
+                                    </div>
+                                    <div v-if="customPerceptions > 0" class="flex justify-between text-emerald-700">
+                                        <span>Percepción Extra:</span>
+                                        <span class="font-medium">+{{ formatCurrency(customPerceptions) }}</span>
+                                    </div>
+                                    <div class="flex justify-between border-t border-slate-200 pt-1 font-semibold text-emerald-800">
+                                        <span>Total Percepciones:</span>
+                                        <span>{{ formatCurrency(previewRow.perceptions) }}</span>
+                                    </div>
+
+                                    <div class="flex justify-between pt-1">
+                                        <span>Retención ISR estimada:</span>
+                                        <span class="text-rose-600">-{{ formatCurrency(previewRow.isr ?? previewRow.concepts?.isr ?? 0) }}</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span>Aportación IMSS estimada:</span>
+                                        <span class="text-rose-600">-{{ formatCurrency(previewRow.imss ?? previewRow.concepts?.imss ?? 0) }}</span>
+                                    </div>
+                                    <div v-if="delays > 0" class="flex justify-between text-rose-600">
+                                        <span>Sanción Retardos ({{ delays }}):</span>
+                                        <span>-{{ formatCurrency(delays * 50) }}</span>
+                                    </div>
+                                    <div v-if="absences > 0" class="flex justify-between text-rose-600">
+                                        <span>Descuento Faltas ({{ absences }}):</span>
+                                        <span>-{{ formatCurrency(previewRow.concepts?.absencesPenalty ?? 0) }}</span>
+                                    </div>
+                                    <div v-if="customDeductions > 0" class="flex justify-between text-rose-600">
+                                        <span>Deducción Extra Manual:</span>
+                                        <span>-{{ formatCurrency(customDeductions) }}</span>
+                                    </div>
+                                    <div class="flex justify-between border-t border-slate-200 pt-1 font-semibold text-rose-800">
+                                        <span>Total Deducciones:</span>
+                                        <span>{{ formatCurrency(previewRow.deductions) }}</span>
+                                    </div>
+
+                                    <div class="flex justify-between border-t-2 border-slate-300 pt-2 text-sm font-bold text-slate-900">
+                                        <span>Neto a Pagar:</span>
+                                        <span class="text-[#0a161e]">{{ formatCurrency(previewRow.net) }}</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
+                        <!-- Footer -->
                         <div
                             class="flex items-center justify-between border-t border-slate-100 bg-slate-50/50 px-6 py-4"
                         >
                             <button
                                 type="button"
-                                class="inline-flex items-center gap-1.5 text-xs font-medium text-slate-500 transition hover:text-slate-800"
+                                class="inline-flex items-center gap-1.5 text-xs font-medium text-slate-500 hover:text-slate-800"
                                 @click="resetDefaults"
                             >
                                 <RotateCcw class="size-3.5" />
                                 Restablecer
                             </button>
-
-                            <div class="flex gap-2">
+                            <div class="flex items-center gap-2">
                                 <button
                                     type="button"
-                                    class="h-9 rounded-lg border border-slate-200 bg-white px-4 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+                                    class="rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50"
                                     @click="emit('close')"
                                 >
                                     Cancelar
                                 </button>
                                 <button
                                     type="button"
-                                    class="inline-flex h-9 items-center gap-1.5 rounded-lg bg-[#23c6c8] px-4 text-xs font-semibold text-white shadow-xs transition hover:bg-[#1db2b4]"
+                                    class="inline-flex items-center gap-1.5 rounded-lg bg-[#23c6c8] px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-[#1eb0b2] focus:outline-none focus:ring-2 focus:ring-[#23c6c8]/40"
                                     @click="handleSave"
                                 >
                                     <CheckCircle2 class="size-3.5" />
-                                    Guardar ajuste
+                                    Guardar Ajuste
                                 </button>
                             </div>
                         </div>
