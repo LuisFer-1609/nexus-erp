@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use RuntimeException;
 
@@ -20,7 +21,7 @@ class AdminUserSeeder extends Seeder
             throw new RuntimeException('NEXUS_ADMIN_PASSWORD must be configured before running AdminUserSeeder.');
         }
 
-        User::query()->firstOrCreate(
+        $admin = User::query()->firstOrCreate(
             ['email' => 'admin@utt.com'],
             [
                 'name' => 'Administrador NexusERP',
@@ -28,5 +29,14 @@ class AdminUserSeeder extends Seeder
                 'password' => Hash::make($password),
             ],
         );
+
+        // Nexus IA responde con los datos de la empresa del usuario: si el
+        // administrador aún no tiene una, se le asigna la primera empresa.
+        if ($admin->company_id === null) {
+            $companyId = DB::table('companies')->orderBy('id')->value('id');
+            if ($companyId !== null) {
+                $admin->forceFill([User::COMPANY_ID => (int) $companyId])->save();
+            }
+        }
     }
 }
