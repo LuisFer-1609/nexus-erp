@@ -66,7 +66,18 @@ class Employee extends Model
 
     public $timestamps = true;
 
-    public function user(): BelongsTo { return $this->belongsTo(User::class, self::ID_USER); }
-    public function workSchedules(): HasMany { return $this->hasMany(WorkSchedule::class, WorkSchedule::EMPLOYEE_ID); }
-    public function attendances(): HasMany { return $this->hasMany(Attendance::class, Attendance::EMPLOYEE_ID); }
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, self::ID_USER);
+    }
+
+    public function workSchedules(): HasMany
+    {
+        return $this->hasMany(WorkSchedule::class, WorkSchedule::EMPLOYEE_ID);
+    }
+
+    public function attendances(): HasMany
+    {
+        return $this->hasMany(Attendance::class, Attendance::EMPLOYEE_ID);
+    }
 }

@@ -58,5 +58,8 @@ class Attendance extends Model
 
     public $timestamps = true;
 
-    public function employee(): BelongsTo { return $this->belongsTo(Employee::class, self::EMPLOYEE_ID); }
+    public function employee(): BelongsTo
+    {
+        return $this->belongsTo(Employee::class, self::EMPLOYEE_ID);
+    }
 }

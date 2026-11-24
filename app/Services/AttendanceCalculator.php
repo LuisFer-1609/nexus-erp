@@ -48,6 +48,6 @@ class AttendanceCalculator
 
     private function normalizeTime(string $time): string
     {
-        return strlen($time) === 5 ? $time . ':00' : $time;
+        return strlen($time) === 5 ? $time.':00' : $time;
     }
 }
