@@ -3,9 +3,18 @@
 namespace App\Models\Nexus;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * Modelo de la tabla `work_schedules`.
+ *
+ * @property int $id
+ * @property int $employee_id
+ * @property int $weekday
+ * @property string|null $check_in_time
+ * @property string|null $check_out_time
+ * @property bool $is_rest_day
+ * @property-read Employee $employee
  */
 class WorkSchedule extends Model
 {
@@ -44,5 +53,18 @@ class WorkSchedule extends Model
 
     protected $primaryKey = self::ID;
 
+    protected $fillable = ['employee_id', 'weekday', 'check_in_time', 'check_out_time', 'is_rest_day', 'valid_from', 'valid_to'];
+
+    protected function casts(): array
+    {
+        return ['weekday' => 'integer', 'is_rest_day' => 'boolean', 'valid_from' => 'date', 'valid_to' => 'date'];
+    }
+
     public $timestamps = true;
+
+    /** @return BelongsTo<Employee, $this> */
+    public function employee(): BelongsTo
+    {
+        return $this->belongsTo(Employee::class, self::EMPLOYEE_ID);
+    }
 }
