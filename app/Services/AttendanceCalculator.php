@@ -15,7 +15,7 @@ class AttendanceCalculator
         if ($schedule->is_rest_day) {
             return [
                 'late_minutes' => 0,
-                'overtime_hours' => 0,
+                'overtime_hours' => 0.0,
                 'status' => 'day_off',
             ];
         }
@@ -23,7 +23,7 @@ class AttendanceCalculator
         if ($checkIn === null) {
             return [
                 'late_minutes' => 0,
-                'overtime_hours' => 0,
+                'overtime_hours' => 0.0,
                 'status' => 'absent',
             ];
         }
@@ -36,10 +36,10 @@ class AttendanceCalculator
             : Carbon::createFromFormat('H:i:s', $this->normalizeTime($checkOut));
 
         return [
-            'late_minutes' => max(0, $expectedStart->diffInMinutes($actualCheckIn, false)),
+            'late_minutes' => max(0, (int) $expectedStart->diffInMinutes($actualCheckIn, false)),
             'overtime_hours' => $actualCheckOut === null
-                ? 0
-                : round(max(0, $expectedEnd->diffInMinutes($actualCheckOut, false)) / 60, 2),
+                ? 0.0
+                : round(max(0, (int) $expectedEnd->diffInMinutes($actualCheckOut, false)) / 60, 2),
             'status' => $expectedStart->diffInMinutes($actualCheckIn, false) > 0
                 ? 'late'
                 : 'on_time',

@@ -57,7 +57,7 @@ class PreNominaController extends Controller
         Validator::make($validated, ['check_out' => ['nullable', 'after:check_in']])->validate();
         $attendance->load(['employee.workSchedules']);
         $schedule = $attendance->employee->workSchedules->firstWhere('weekday', $attendance->attendance_date->dayOfWeekIso);
-        abort_unless($schedule, 422, 'No existe un horario para este día.');
+        abort_unless($schedule !== null, 422, 'No existe un horario para este día.');
         $calculated = $calculator->calculate($schedule, $validated['check_in'] ?? null, $validated['check_out'] ?? null);
         $attendance->update(['check_in' => $validated['check_in'] ?? null, 'check_out' => $validated['check_out'] ?? null, ...$calculated, 'expected_check_in' => $schedule->check_in_time, 'expected_check_out' => $schedule->check_out_time]);
 
@@ -69,23 +69,26 @@ class PreNominaController extends Controller
         return Inertia::render('preNomina/PreNomina');
     }
 
+    /** @return array<string, mixed> */
     private function employeeRow(Employee $employee): array
     {
-        return ['id' => $employee->id, 'employee_number' => $employee->code, 'first_name' => $employee->user?->name ?? '', 'last_name' => $employee->user?->last_name ?? '', 'work_schedules' => $employee->workSchedules->map(fn (WorkSchedule $schedule) => ['id' => $schedule->id, 'day_of_week' => $schedule->weekday, 'start_time' => $schedule->check_in_time, 'end_time' => $schedule->check_out_time, 'is_day_off' => (bool) $schedule->is_rest_day])->values()];
+        return ['id' => $employee->id, 'employee_number' => $employee->code, 'first_name' => $employee->user->name, 'last_name' => $employee->user->last_name ?? '', 'work_schedules' => $employee->workSchedules->map(fn (WorkSchedule $schedule) => ['id' => $schedule->id, 'day_of_week' => $schedule->weekday, 'start_time' => $schedule->check_in_time, 'end_time' => $schedule->check_out_time, 'is_day_off' => (bool) $schedule->is_rest_day])->values()];
     }
 
+    /** @return array<string, mixed> */
     private function attendanceRow(Attendance $record, int $day): array
     {
         $schedule = $record->employee->workSchedules->firstWhere('weekday', $day);
 
-        return ['id' => $record->id, 'employee_id' => $record->employee_id, 'employee' => trim(($record->employee->user?->name ?? '').' '.($record->employee->user?->last_name ?? '')), 'date' => $record->attendance_date->toDateString(), 'checkIn' => $record->check_in ? substr($record->check_in, 0, 5) : null, 'checkOut' => $record->check_out ? substr($record->check_out, 0, 5) : null, 'scheduleStart' => $schedule?->check_in_time ? substr($schedule->check_in_time, 0, 5) : null, 'scheduleEnd' => $schedule?->check_out_time ? substr($schedule->check_out_time, 0, 5) : null, 'delayMinutes' => (int) $record->late_minutes, 'overtimeMinutes' => (int) round(((float) $record->overtime_hours) * 60), 'status' => $this->statusLabel($record->status)];
+        return ['id' => $record->id, 'employee_id' => $record->employee_id, 'employee' => trim($record->employee->user->name.' '.($record->employee->user->last_name ?? '')), 'date' => $record->attendance_date->toDateString(), 'checkIn' => $record->check_in ? substr($record->check_in, 0, 5) : null, 'checkOut' => $record->check_out ? substr($record->check_out, 0, 5) : null, 'scheduleStart' => $schedule?->check_in_time ? substr($schedule->check_in_time, 0, 5) : null, 'scheduleEnd' => $schedule?->check_out_time ? substr($schedule->check_out_time, 0, 5) : null, 'delayMinutes' => (int) $record->late_minutes, 'overtimeMinutes' => (int) round(((float) $record->overtime_hours) * 60), 'status' => $this->statusLabel($record->status)];
     }
 
+    /** @return array<string, mixed> */
     private function attendanceDetailRow(Attendance $record): array
     {
         $schedule = $record->employee->workSchedules->firstWhere('weekday', $record->attendance_date->dayOfWeekIso);
 
-        return ['id' => $record->id, 'date' => $record->attendance_date->toDateString(), 'employee' => trim(($record->employee->user?->name ?? '').' '.($record->employee->user?->last_name ?? '')), 'employeeNumber' => $record->employee->code, 'checkIn' => $record->check_in ? substr($record->check_in, 0, 5) : null, 'checkOut' => $record->check_out ? substr($record->check_out, 0, 5) : null, 'delayMinutes' => (int) $record->late_minutes, 'overtimeMinutes' => (int) round(((float) $record->overtime_hours) * 60), 'status' => $record->status, 'isManual' => false, 'scheduleStart' => $schedule?->check_in_time ? substr($schedule->check_in_time, 0, 5) : null, 'scheduleEnd' => $schedule?->check_out_time ? substr($schedule->check_out_time, 0, 5) : null, 'isDayOff' => (bool) ($schedule?->is_rest_day ?? false)];
+        return ['id' => $record->id, 'date' => $record->attendance_date->toDateString(), 'employee' => trim($record->employee->user->name.' '.($record->employee->user->last_name ?? '')), 'employeeNumber' => $record->employee->code, 'checkIn' => $record->check_in ? substr($record->check_in, 0, 5) : null, 'checkOut' => $record->check_out ? substr($record->check_out, 0, 5) : null, 'delayMinutes' => (int) $record->late_minutes, 'overtimeMinutes' => (int) round(((float) $record->overtime_hours) * 60), 'status' => $record->status, 'isManual' => false, 'scheduleStart' => $schedule?->check_in_time ? substr($schedule->check_in_time, 0, 5) : null, 'scheduleEnd' => $schedule?->check_out_time ? substr($schedule->check_out_time, 0, 5) : null, 'isDayOff' => (bool) $schedule->is_rest_day];
     }
 
     private function statusLabel(string $status): string

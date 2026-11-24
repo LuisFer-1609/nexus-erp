@@ -2,11 +2,22 @@
 
 namespace App\Models\Nexus;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * Modelo de la tabla `attendances`.
+ *
+ * @property int $id
+ * @property int $employee_id
+ * @property Carbon $attendance_date
+ * @property string|null $check_in
+ * @property string|null $check_out
+ * @property int $late_minutes
+ * @property string $overtime_hours
+ * @property string $status
+ * @property-read Employee $employee
  */
 class Attendance extends Model
 {
@@ -58,6 +69,7 @@ class Attendance extends Model
 
     public $timestamps = true;
 
+    /** @return BelongsTo<Employee, $this> */
     public function employee(): BelongsTo
     {
         return $this->belongsTo(Employee::class, self::EMPLOYEE_ID);
