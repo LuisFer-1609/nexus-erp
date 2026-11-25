@@ -3,12 +3,15 @@
 namespace App\Models\Nexus;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * Modelo de la tabla `positions`.
  */
 class Position extends Model
 {
+    use SoftDeletes;
     /** Nombre de la tabla. */
     public const TABLE = 'positions';
 
@@ -38,5 +41,21 @@ class Position extends Model
 
     protected $primaryKey = self::ID;
 
+    protected $fillable = [
+        self::COMPANY_ID,
+        self::AREA_ID,
+        self::CODE,
+        self::NAME,
+        self::CREATED_USER_ID,
+        self::UPDATED_USER_ID,
+        self::DELETED_USER_ID,
+    ];
+
     public $timestamps = true;
+
+    /** @return BelongsTo<Area, $this> */
+    public function area(): BelongsTo
+    {
+        return $this->belongsTo(Area::class, self::AREA_ID);
+    }
 }

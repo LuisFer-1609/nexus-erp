@@ -3,12 +3,14 @@
 namespace App\Models\Nexus;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * Modelo de la tabla `payroll_concept_types`.
  */
 class PayrollConceptType extends Model
 {
+    use SoftDeletes;
     /** Nombre de la tabla. */
     public const TABLE = 'payroll_concept_types';
 

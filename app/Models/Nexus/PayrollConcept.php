@@ -3,12 +3,15 @@
 namespace App\Models\Nexus;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * Modelo de la tabla `payroll_concepts`.
  */
 class PayrollConcept extends Model
 {
+    use SoftDeletes;
     /** Nombre de la tabla. */
     public const TABLE = 'payroll_concepts';
 
@@ -40,5 +43,29 @@ class PayrollConcept extends Model
 
     protected $primaryKey = self::ID;
 
+    protected $fillable = [
+        self::COMPANY_ID,
+        self::PAYROLL_CONCEPT_TYPE_ID,
+        self::CODE,
+        self::NAME,
+        self::IS_ACTIVE,
+        self::CREATED_USER_ID,
+        self::UPDATED_USER_ID,
+        self::DELETED_USER_ID,
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            self::IS_ACTIVE => 'boolean',
+        ];
+    }
+
     public $timestamps = true;
+
+    /** @return BelongsTo<PayrollConceptType, $this> */
+    public function conceptType(): BelongsTo
+    {
+        return $this->belongsTo(PayrollConceptType::class, self::PAYROLL_CONCEPT_TYPE_ID);
+    }
 }

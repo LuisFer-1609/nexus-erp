@@ -8,6 +8,7 @@ use App\Http\Controllers\ia\IaChatController;
 use App\Http\Controllers\ia\IaConversationController;
 use App\Http\Controllers\ia\IaReportController;
 use App\Http\Controllers\ia\WhatsappController;
+use App\Http\Controllers\preNomina\CatalogosController;
 use App\Http\Controllers\preNomina\PreNominaController;
 use Illuminate\Support\Facades\Route;
 
@@ -47,6 +48,25 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::prefix('pre-nomina')->name('pre-nomina.')->group(function () {
         Route::get('/', [PreNominaController::class, 'index'])->name('index');
         Route::get('empleados', [PreNominaController::class, 'empleados'])->name('empleados');
+        Route::post('empleados', [PreNominaController::class, 'storeEmpleado'])->name('empleados.store');
+        Route::put('empleados/{employee}', [PreNominaController::class, 'updateEmpleado'])->name('empleados.update');
+        Route::delete('empleados/{employee}', [PreNominaController::class, 'destroyEmpleado'])->name('empleados.destroy');
+        Route::get('empleados/plantilla-csv', [PreNominaController::class, 'descargarPlantillaCsv'])->name('empleados.csv-template');
+        Route::post('empleados/importar-csv/preview', [PreNominaController::class, 'previewEmpleadosCsv'])->name('empleados.csv-preview');
+        Route::post('empleados/importar-csv/confirmar', [PreNominaController::class, 'confirmarEmpleadosCsv'])->name('empleados.csv-confirm');
+
+        Route::prefix('catalogos')->name('catalogos.')->group(function () {
+            Route::get('areas', [CatalogosController::class, 'areas'])->name('areas');
+            Route::get('puestos', [CatalogosController::class, 'puestos'])->name('puestos');
+            Route::get('frecuencias', [CatalogosController::class, 'frecuencias'])->name('frecuencias');
+            Route::get('conceptos', [CatalogosController::class, 'conceptos'])->name('conceptos');
+            Route::get('nacionalidades', [CatalogosController::class, 'nacionalidades'])->name('nacionalidades');
+            Route::get('tipos-negocio', [CatalogosController::class, 'tiposNegocio'])->name('tipos-negocio');
+            Route::post('{catalog}', [CatalogosController::class, 'store'])->name('store');
+            Route::put('{catalog}/{id}', [CatalogosController::class, 'update'])->name('update');
+            Route::delete('{catalog}/{id}', [CatalogosController::class, 'destroy'])->name('destroy');
+        });
+
         Route::get('asistencias', [PreNominaController::class, 'asistencias'])->name('asistencias');
         Route::get('asistencias/{attendance}', [PreNominaController::class, 'attendanceDetail'])->name('asistencias.show');
         Route::put('asistencias/{attendance}', [PreNominaController::class, 'updateAttendance'])->name('asistencias.update');

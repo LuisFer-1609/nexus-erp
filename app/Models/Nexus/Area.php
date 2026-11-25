@@ -3,12 +3,15 @@
 namespace App\Models\Nexus;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * Modelo de la tabla `areas`.
  */
 class Area extends Model
 {
+    use SoftDeletes;
     /** Nombre de la tabla. */
     public const TABLE = 'areas';
 
@@ -36,5 +39,20 @@ class Area extends Model
 
     protected $primaryKey = self::ID;
 
+    protected $fillable = [
+        self::COMPANY_ID,
+        self::CODE,
+        self::NAME,
+        self::CREATED_USER_ID,
+        self::UPDATED_USER_ID,
+        self::DELETED_USER_ID,
+    ];
+
     public $timestamps = true;
+
+    /** @return HasMany<Position, $this> */
+    public function positions(): HasMany
+    {
+        return $this->hasMany(Position::class, Position::AREA_ID);
+    }
 }
