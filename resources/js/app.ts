@@ -1,4 +1,6 @@
 import { createInertiaApp } from '@inertiajs/vue3';
+import ElementPlus from 'element-plus';
+import 'element-plus/dist/index.css';
 import { initializeTheme } from '@/composables/useAppearance';
 import AppLayout from '@/layouts/AppLayout.vue';
 import AdminLayout from '@/layouts/AdminLayout.vue';
@@ -26,6 +28,7 @@ void createInertiaApp({
         }
     },
     withApp: (app) => {
+        app.use(ElementPlus);
         app.directive('focus', {
             mounted: (el: HTMLElement, shouldFocus) => {
                 if (shouldFocus.value !== false) {

@@ -1,0 +1,17 @@
+{
+    "name": "nexus-whatsapp-bridge",
+    "private": true,
+    "description": "Puente de WhatsApp para Nexus: vincula el WhatsApp de cada usuario por QR.",
+    "type": "module",
+    "scripts": {
+        "start": "node index.mjs"
+    },
+    "dependencies": {
+        "@whiskeysockets/baileys": "^7.0.0-rc14",
+        "pino": "^10.4.0",
+        "qrcode": "^1.5.4"
+    },
+    "engines": {
+        "node": ">=20"
+    }
+}

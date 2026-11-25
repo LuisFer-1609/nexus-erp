@@ -13,12 +13,14 @@ import {
     Menu,
     Search,
     Settings,
+    Smartphone,
     UserRound,
     Users,
     WalletCards,
     X,
 } from '@lucide/vue';
 import { computed, onMounted, ref, watch } from 'vue';
+import NexusAssistantWidget from '@/components/nexus/NexusAssistantWidget.vue';
 import UserMenuContent from '@/components/UserMenuContent.vue';
 import {
     DropdownMenu,
@@ -27,6 +29,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import type { User } from '@/types';
 import type { Component } from 'vue';
+import NexusViewTransition from '@/components/nexus/NexusViewTransition.vue';
 
 type NavItem = {
     label: string;
@@ -35,7 +38,7 @@ type NavItem = {
 };
 
 type NavSection = {
-    key: 'crm' | 'payroll';
+    key: 'crm' | 'payroll' | 'ai';
     label: string;
     icon: Component;
     items: NavItem[];
@@ -48,6 +51,7 @@ const sidebarCollapsed = ref(false);
 const expandedSections = ref<Record<NavSection['key'], boolean>>({
     crm: true,
     payroll: true,
+    ai: true,
 });
 
 const user = computed(() => page.props.auth.user as User);
@@ -68,78 +72,101 @@ const companyName = computed(
     () => (page.props.auth as { company?: string }).company ?? 'Empresa activa',
 );
 
-const navSections = computed<NavSection[]>(() => {
-    const sections: NavSection[] = [
-        {
-            key: 'crm',
-            label: 'CRM',
-            icon: Contact,
-            paths: ['/dashboard', '/crm'],
-            items: [
-                {
-                    label: 'Dashboard',
-                    href: '/dashboard',
-                    icon: LayoutDashboard,
-                },
-                ...(['Administrador', 'Marketing'].includes(roleName.value)
-                    ? [
-                          { label: 'Leads', href: '/crm/leads', icon: Contact },
-                          {
-                              label: 'Campañas',
-                              href: '/crm/campanas',
-                              icon: LayoutDashboard,
-                          },
-                          {
-                              label: 'Clientes',
-                              href: '/crm/clientes',
-                              icon: Users,
-                          },
-                          {
-                              label: 'Asistente IA',
-                              href: '/crm/asistente',
-                              icon: Bot,
-                          },
-                      ]
-                    : []),
-                ...(roleName.value === 'Administrador'
-                    ? [
-                          {
-                              label: 'Configuración',
-                              href: '/crm/configuracion',
-                              icon: Settings,
-                          },
-                      ]
-                    : []),
-            ],
-        },
-    ];
-
-    if (['Administrador', 'Recursos Humanos'].includes(roleName.value)) {
-        sections.push({
-            key: 'payroll',
-            label: 'PRE-NÓMINA',
-            icon: WalletCards,
-            paths: ['/pre-nomina'],
-            items: [
-                {
-                    label: 'Empleados',
-                    href: '/pre-nomina/empleados',
-                    icon: UserRound,
-                },
-                {
-                    label: 'Asistencias',
-                    href: '/pre-nomina/asistencias',
-                    icon: Clock3,
-                },
-                { label: 'Pre-nómina', href: '/pre-nomina', icon: WalletCards },
-            ],
-        });
-    }
-
-    return sections;
-});
+const navSections: NavSection[] = [
+    {
+        key: 'crm',
+        label: 'CRM',
+        icon: Contact,
+        paths: ['/dashboard', '/crm'],
+        items: [
+            { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+            { label: 'Leads', href: '/crm/leads', icon: Contact },
+            { label: 'Clientes', href: '/crm/clientes', icon: Users },
+            { label: 'Asistente IA', href: '/crm/asistente', icon: Bot },
+            {
+                label: 'Configuración',
+                href: '/crm/configuracion',
+                icon: Settings,
+            },
+        ],
+    },
+    {
+        key: 'payroll',
+        label: 'PRE-NÓMINA',
+        icon: WalletCards,
+        paths: ['/pre-nomina'],
+        items: [
+            {
+                label: 'Empleados',
+                href: '/pre-nomina/empleados',
+                icon: UserRound,
+            },
+            {
+                label: 'Asistencias',
+                href: '/pre-nomina/asistencias',
+                icon: Clock3,
+            },
+            { label: 'Pre-nómina', href: '/pre-nomina', icon: WalletCards },
+        ],
+    },
+    {
+        key: 'ai',
+        label: 'NEXUS IA',
+        icon: Bot,
+        paths: ['/ia'],
+        items: [{ label: 'WhatsApp', href: '/ia/whatsapp', icon: Smartphone }],
+    },
+];
 
 const currentPath = computed(() => page.url.split('?')[0]);
+const routeTransitionDirection = ref<'up' | 'down' | 'left' | 'right'>('up');
+
+const routeOrder = [
+    '/dashboard',
+    '/crm/leads',
+    '/crm/clientes',
+    '/crm/asistente',
+    '/crm/configuracion',
+    '/pre-nomina/empleados',
+    '/pre-nomina/asistencias',
+    '/pre-nomina',
+];
+
+watch(currentPath, (newPath, oldPath) => {
+    if (!oldPath || newPath === oldPath) {
+        return;
+    }
+
+    const oldIsPayroll = oldPath.startsWith('/pre-nomina');
+    const newIsPayroll = newPath.startsWith('/pre-nomina');
+
+    if (oldIsPayroll !== newIsPayroll) {
+        routeTransitionDirection.value = newIsPayroll ? 'left' : 'right';
+        return;
+    }
+
+    const oldIdx = routeOrder.findIndex((p) =>
+        p === '/dashboard' || p === '/pre-nomina'
+            ? oldPath === p
+            : oldPath.startsWith(p),
+    );
+    const newIdx = routeOrder.findIndex((p) =>
+        p === '/dashboard' || p === '/pre-nomina'
+            ? newPath === p
+            : newPath.startsWith(p),
+    );
+
+    if (oldIdx !== -1 && newIdx !== -1) {
+        routeTransitionDirection.value = newIdx > oldIdx ? 'up' : 'down';
+    } else {
+        routeTransitionDirection.value = 'up';
+    }
+});
+
+// La pantalla del asistente ocupa toda la ventana (sin márgenes) y, al ser el chat
+// completo, el círculo flotante de Nexus se oculta en ella.
+const isAssistantPage = computed(() => currentPath.value === '/crm/asistente');
+const showAssistantWidget = computed(() => !isAssistantPage.value);
 
 const isActive = (href: string): boolean => {
     if (href === '/dashboard' || href === '/pre-nomina') {
@@ -449,7 +476,7 @@ watch(
             :class="sidebarCollapsed ? 'lg:pl-[72px]' : 'lg:pl-[232px]'"
         >
             <header
-                class="sticky top-0 z-30 flex h-16 items-center border-b border-slate-200 bg-white/95 px-4 backdrop-blur md:px-7"
+                class="sticky top-0 z-30 flex h-16 items-center border-b border-slate-200 bg-white px-4 md:px-7"
             >
                 <button
                     type="button"
@@ -535,14 +562,26 @@ watch(
             </header>
 
             <main
-                class="mx-auto w-full max-w-[1500px] px-4 py-6 md:px-8 md:py-7"
+                :class="
+                    isAssistantPage
+                        ? 'h-[calc(100dvh-4rem)] w-full overflow-hidden'
+                        : 'mx-auto w-full max-w-[1500px] px-4 py-6 md:px-8 md:py-7'
+                "
             >
-                <div
-                    class="animate-in duration-300 fade-in slide-in-from-bottom-1 motion-reduce:animate-none"
+                <NexusViewTransition
+                    :direction="routeTransitionDirection"
+                    mode="out-in"
                 >
-                    <slot />
-                </div>
+                    <div
+                        :key="currentPath"
+                        :class="isAssistantPage ? 'h-full' : ''"
+                    >
+                        <slot />
+                    </div>
+                </NexusViewTransition>
             </main>
         </div>
+
+        <NexusAssistantWidget v-if="showAssistantWidget" />
     </div>
 </template>
