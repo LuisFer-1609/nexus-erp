@@ -146,7 +146,7 @@ onMounted(async () => {
             :description="
                 hasAccounts
                     ? 'No hay campañas disponibles en las cuentas conectadas.'
-                    : 'Conecta un Business Manager para ver las campañas.'
+                    : 'Vincula una cuenta publicitaria para ver las campañas.'
             "
         />
         <Link
