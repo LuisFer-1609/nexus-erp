@@ -119,36 +119,17 @@ class MetaConnectionController extends Controller
             if (! $business) {
                 throw ValidationException::withMessages(['business_id' => 'No tienes acceso a ese Business Manager.']);
             }
-            $accounts = $meta->businessAdAccounts($data['business_id'], $connection->access_token);
         } catch (RequestException|ConnectionException) {
-            return back()->withErrors(['meta' => 'Meta no permitió consultar las cuentas de ese Business Manager.']);
+            return back()->withErrors(['meta' => 'Meta no permitió consultar ese Business Manager.']);
         }
 
-        DB::transaction(function () use ($connection, $business, $accounts, $data) {
+        DB::transaction(function () use ($connection, $business, $data) {
             if ($connection->business_id !== $data['business_id']) {
-                DB::table('meta_ad_accounts')->where('meta_connection_id', $connection->id)->delete();
                 DB::table('meta_pages')->where('meta_connection_id', $connection->id)->delete();
             }
             $connection->update(['business_id' => $data['business_id'], 'business_name' => (string) $business['name']]);
-            foreach ($accounts as $account) {
-                $owner = DB::table('meta_ad_accounts')->where('external_id', $account['id'])->first();
-                if ($owner && (int) $owner->company_id !== (int) $connection->company_id) {
-                    continue;
-                }
-                DB::table('meta_ad_accounts')->updateOrInsert(
-                    ['external_id' => $account['id']],
-                    [
-                        'company_id' => $connection->company_id,
-                        'meta_connection_id' => $connection->id,
-                        'name' => $account['name'],
-                        'currency' => $account['currency'],
-                        'created_at' => $owner ? $owner->created_at : now(),
-                        'updated_at' => now(),
-                    ],
-                );
-            }
         });
 
-        return redirect()->route('crm.campanas')->with('success', 'Business Manager conectado. Ya puedes consultar sus campañas.');
+        return redirect()->route('crm.campanas')->with('success', 'Business Manager conectado. Vincula las cuentas publicitarias que quieras consultar.');
     }
 }

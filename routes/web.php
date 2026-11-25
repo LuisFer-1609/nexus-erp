@@ -40,6 +40,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::post('meta/business', [MetaConnectionController::class, 'selectBusiness'])->name('meta.business.select');
             Route::get('meta/pages', [MetaAssetController::class, 'pages'])->name('meta.pages.index');
             Route::post('meta/ad-accounts', [MetaAssetController::class, 'linkAccount'])->name('meta.ad-accounts.link');
+            Route::delete('meta/ad-accounts/{accountId}', [MetaAssetController::class, 'unlinkAccount'])->name('meta.ad-accounts.unlink');
             Route::post('meta/pages', [MetaAssetController::class, 'linkPage'])->name('meta.pages.link');
             Route::get('meta/campaigns', [MetaCampaignController::class, 'list'])->name('meta.campaigns.index');
             Route::post('meta/campaigns/save', [MetaCampaignController::class, 'save'])->name('meta.campaigns.save');

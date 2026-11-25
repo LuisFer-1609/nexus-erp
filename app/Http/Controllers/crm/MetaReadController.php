@@ -30,20 +30,24 @@ class MetaReadController extends Controller
         }
 
         $connection = $access->connection($request);
-        if (! $connection || ! $connection->business_id) {
+        if (! $connection) {
             return response()->json(['data' => []]);
         }
 
         try {
-            $accounts = $service->businessAdAccounts($connection->business_id, $access->token($request));
+            $accounts = $service->adAccounts($access->token($request));
         } catch (RequestException|ConnectionException) {
-            return response()->json(['message' => 'No se pudieron consultar las cuentas del Business Manager en Meta.'], 502);
+            return response()->json(['message' => 'No se pudieron consultar las cuentas publicitarias en Meta.'], 502);
         }
+        $ownedElsewhere = DB::table('meta_ad_accounts')
+            ->where('company_id', '!=', $companyId)
+            ->whereIn('external_id', array_column($accounts, 'id'))
+            ->pluck('external_id')->all();
 
         return response()->json([
             'data' => array_map(
                 fn (array $account) => [...$account, 'linked' => $linked->has($account['id']) && (int) $linked->get($account['id'])->company_id === $companyId],
-                $accounts,
+                array_values(array_filter($accounts, fn (array $account) => ! in_array($account['id'], $ownedElsewhere, true))),
             ),
         ]);
     }

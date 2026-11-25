@@ -34,14 +34,11 @@ test('saving visible campaigns inserts once and only updates changed metrics', f
 
     $spend = '10.00';
     Http::fake(function ($request) use (&$spend) {
-        if (str_contains($request->url(), '/555/owned_ad_accounts')) {
+        if (str_contains($request->url(), '/me/adaccounts')) {
             return Http::response(['data' => [[
                 'id' => 'act_123', 'account_id' => '123', 'name' => 'Cuenta',
                 'account_status' => 1, 'currency' => 'MXN', 'timezone_name' => 'America/Mexico_City',
             ]]]);
-        }
-        if (str_contains($request->url(), '/555/client_ad_accounts')) {
-            return Http::response(['data' => []]);
         }
         if (str_contains($request->url(), '/act_123/campaigns')) {
             return Http::response(['data' => [

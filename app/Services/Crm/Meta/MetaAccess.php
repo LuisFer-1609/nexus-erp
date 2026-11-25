@@ -39,7 +39,7 @@ class MetaAccess
     public function token(Request $request): string
     {
         $connection = $this->connection($request);
-        abort_unless($connection !== null && $connection->business_id !== null, 409, 'Conecta un Business Manager de Meta.');
+        abort_unless($connection !== null, 409, 'Conecta tu cuenta de Meta.');
 
         return $this->tokenForConnection($connection);
     }
@@ -54,7 +54,7 @@ class MetaAccess
             ->where('company_id', $this->companyId($request))
             ->whereKey($connectionId)
             ->first();
-        abort_unless($connection !== null && $connection->business_id !== null, 409, 'Reconecta esta cuenta con Meta.');
+        abort_unless($connection !== null, 409, 'Reconecta esta cuenta con Meta.');
 
         return $this->tokenForConnection($connection);
     }

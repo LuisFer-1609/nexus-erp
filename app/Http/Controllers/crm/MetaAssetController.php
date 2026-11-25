@@ -44,8 +44,8 @@ class MetaAssetController extends Controller
         $data = $request->validate(['account_id' => ['required', 'regex:/^\d+$/']]);
         try {
             $connection = $access->connection($request);
-            abort_unless($connection !== null && $connection->business_id !== null, 409);
-            $account = collect($meta->businessAdAccounts($connection->business_id, $access->token($request)))
+            abort_unless($connection !== null, 409);
+            $account = collect($meta->adAccounts($access->token($request)))
                 ->firstWhere('id', $data['account_id']);
         } catch (RequestException|ConnectionException) {
             return back()->withErrors(['meta' => 'No se pudo verificar la cuenta en Meta.']);
@@ -58,6 +58,20 @@ class MetaAssetController extends Controller
         $this->link('meta_ad_accounts', $access->companyId($request), $connection->id, (string) $account['id'], (string) $account['name'], ['currency' => $account['currency']]);
 
         return back()->with('success', 'Cuenta publicitaria vinculada.');
+    }
+
+    public function unlinkAccount(Request $request, MetaAccess $access, string $accountId): RedirectResponse
+    {
+        $access->assertManage($request);
+        abort_unless(preg_match('/^\d+$/', $accountId), 404);
+
+        $deleted = DB::table('meta_ad_accounts')
+            ->where('company_id', $access->companyId($request))
+            ->where('external_id', $accountId)
+            ->delete();
+        abort_unless($deleted > 0, 404);
+
+        return back()->with('success', 'Cuenta publicitaria desvinculada.');
     }
 
     public function linkPage(Request $request, MetaAccess $access, MetaReadService $meta): RedirectResponse

@@ -47,6 +47,7 @@ const loading = ref(false);
 const saving = ref(false);
 const error = ref('');
 const notice = ref('');
+let campaignRequestId = 0;
 
 const selectedAccount = computed(() =>
     accounts.value.find((account) => account.id === selectedAccountId.value),
@@ -60,7 +61,7 @@ const visibleCampaigns = computed(() =>
 );
 
 async function loadAssets() {
-    if (!connected.value || (props.canManage && !props.businessName)) return;
+    if (!connected.value) return;
     error.value = '';
 
     try {
@@ -74,11 +75,16 @@ async function loadAssets() {
             );
         accounts.value = (await response.json()).data;
         const first = accounts.value.find((account) => account.linked);
-        if (first && !selectedAccountId.value) {
-            selectedAccountId.value = first.id;
+        if (
+            !accounts.value.some(
+                (account) =>
+                    account.linked && account.id === selectedAccountId.value,
+            )
+        ) {
+            selectedAccountId.value = first?.id ?? '';
             void loadCampaigns();
         }
-        if (props.canManage) {
+        if (props.canManage && props.businessName) {
             const pageResponse = await fetch('/crm/meta/pages', {
                 headers: { Accept: 'application/json' },
             });
@@ -91,14 +97,18 @@ async function loadAssets() {
 }
 
 async function loadCampaigns() {
+    const requestId = ++campaignRequestId;
     campaigns.value = [];
+    loading.value = false;
     if (!selectedAccount.value?.linked) return;
 
+    const accountId = selectedAccountId.value;
     loading.value = true;
     error.value = '';
+    notice.value = '';
     try {
         const params = new URLSearchParams({
-            account_id: selectedAccountId.value,
+            account_id: accountId,
             since: since.value,
             until: until.value,
         });
@@ -111,15 +121,17 @@ async function loadCampaigns() {
                     'No se pudieron consultar las campañas de Meta.',
             );
         const result = await response.json();
+        if (requestId !== campaignRequestId) return;
         campaigns.value = result.data;
         if (result.metrics_error)
             notice.value =
                 'Se cargaron las campañas, pero Meta no devolvió las métricas de este período.';
     } catch (cause) {
+        if (requestId !== campaignRequestId) return;
         error.value =
             cause instanceof Error ? cause.message : 'Meta no respondió.';
     } finally {
-        loading.value = false;
+        if (requestId === campaignRequestId) loading.value = false;
     }
 }
 
@@ -162,6 +174,23 @@ function linkAccount(account: Account) {
             },
         },
     );
+}
+
+function unlinkAccount(account: Account) {
+    router.delete(`/crm/meta/ad-accounts/${account.id}`, {
+        onSuccess: () => {
+            if (selectedAccountId.value === account.id) {
+                selectedAccountId.value = '';
+                campaigns.value = [];
+                campaignRequestId++;
+            }
+            notice.value = 'Cuenta desvinculada.';
+            void loadAssets();
+        },
+        onError: () => {
+            error.value = 'No se pudo desvincular la cuenta.';
+        },
+    });
 }
 
 function linkPage(page: Page) {
@@ -266,8 +295,8 @@ onMounted(() => {
     >
         <h2 class="text-lg font-semibold">Business Manager de Meta</h2>
         <p class="mt-1 text-sm text-slate-500">
-            Cada administrador conecta su cuenta de Meta y elige el Business
-            Manager que administra.
+            Conecta Meta para elegir cuentas publicitarias. El Business Manager
+            se usa para vincular páginas y sus leads.
         </p>
         <p
             v-if="businessName"
@@ -333,7 +362,7 @@ onMounted(() => {
         description="El administrador de la empresa debe conectar Meta para consultar campañas."
     />
 
-    <template v-if="connected && (!canManage || businessName)">
+    <template v-if="connected">
         <section class="mb-6 rounded-xl border border-slate-200 bg-white p-6">
             <div class="flex flex-wrap items-center justify-between gap-3">
                 <h2 class="text-lg font-semibold">Cuentas publicitarias</h2>
@@ -345,8 +374,11 @@ onMounted(() => {
                     Actualizar cuentas
                 </button>
             </div>
+            <p v-if="canManage" class="mt-1 text-sm text-slate-500">
+                Vincula solo las cuentas que quieras consultar en NexusERP.
+            </p>
             <p v-if="accounts.length === 0" class="mt-3 text-sm text-slate-500">
-                No se encontraron cuentas en esta conexión.
+                Meta no devolvió cuentas publicitarias para este usuario.
             </p>
             <div v-else class="mt-4 flex flex-wrap gap-3">
                 <div
@@ -371,12 +403,20 @@ onMounted(() => {
                         class="mt-2 block text-emerald-700"
                         >Vinculada</span
                     >
+                    <button
+                        v-if="canManage && account.linked"
+                        type="button"
+                        class="mt-2 block font-medium text-red-700"
+                        @click="unlinkAccount(account)"
+                    >
+                        Desvincular
+                    </button>
                 </div>
             </div>
         </section>
 
         <section
-            v-if="canManage"
+            v-if="canManage && businessName"
             class="mb-6 rounded-xl border border-slate-200 bg-white p-6"
         >
             <h2 class="text-lg font-semibold">Páginas para leads</h2>
@@ -419,7 +459,7 @@ onMounted(() => {
             <h2 class="text-lg font-semibold">Consultar campañas</h2>
             <div class="mt-4 flex flex-wrap items-end gap-3">
                 <label class="text-sm"
-                    >Cuenta<select
+                    >Cuenta publicitaria<select
                         v-model="selectedAccountId"
                         class="mt-1 block rounded-lg border border-slate-300 px-3 py-2"
                         @change="loadCampaigns"
@@ -432,7 +472,7 @@ onMounted(() => {
                             :key="account.id"
                             :value="account.id"
                         >
-                            {{ account.name }}
+                            {{ account.name }} ({{ account.id }})
                         </option>
                     </select></label
                 >

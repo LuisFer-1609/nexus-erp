@@ -88,7 +88,7 @@ class MetaCampaignController extends Controller
         try {
             $connection = MetaConnection::query()->where('company_id', $access->companyId($request))
                 ->whereKey(DB::table('meta_ad_accounts')->where('company_id', $access->companyId($request))->where('external_id', $data['account_id'])->value('meta_connection_id'))->firstOrFail();
-            $account = collect($meta->businessAdAccounts($connection->business_id, $token))->firstWhere('id', $data['account_id']);
+            $account = collect($meta->adAccounts($token))->firstWhere('id', $data['account_id']);
             abort_unless($account !== null, 403);
             $counts = $saver->save(
                 $access->companyId($request),
