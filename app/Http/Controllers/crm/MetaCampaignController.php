@@ -29,7 +29,6 @@ class MetaCampaignController extends Controller
                 ? $access->connection($request) !== null
                 : DB::table('meta_ad_accounts')->where('company_id', $access->companyId($request))->exists(),
             'businessName' => $access->connection($request)?->business_name,
-            'metaConfigured' => (bool) (config('services.meta.app_id') && config('services.meta.app_secret')),
         ]);
     }
 

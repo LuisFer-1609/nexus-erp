@@ -43,8 +43,14 @@ class CrmController extends Controller
         return Inertia::render('crm/Asistente');
     }
 
-    public function configuracion(): Response
+    public function configuracion(Request $request, MetaAccess $access): Response
     {
-        return Inertia::render('crm/Configuracion');
+        $connection = $access->connection($request);
+
+        return Inertia::render('crm/Configuracion', [
+            'hasConnection' => $connection !== null,
+            'businessName' => $connection?->business_name,
+            'metaConfigured' => (bool) (config('services.meta.app_id') && config('services.meta.app_secret')),
+        ]);
     }
 }

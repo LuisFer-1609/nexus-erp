@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, router, useForm, usePage } from '@inertiajs/vue3';
+import { Head, router, usePage } from '@inertiajs/vue3';
 import { computed, onMounted, ref } from 'vue';
 import NexusEmptyState from '@/components/nexus/NexusEmptyState.vue';
 import NexusPageHeader from '@/components/nexus/NexusPageHeader.vue';
@@ -12,7 +12,6 @@ type Account = {
     linked: boolean;
 };
 type Page = { id: string; name: string; linked: boolean };
-type Business = { id: string; name: string };
 type Campaign = {
     id: string;
     name: string;
@@ -28,12 +27,9 @@ const props = defineProps<{
     canManage: boolean;
     hasConnection: boolean;
     businessName: string | null;
-    metaConfigured: boolean;
 }>();
 const connected = ref(props.hasConnection);
 const page = usePage();
-const businessForm = useForm({ business_id: '' });
-const businesses = ref<Business[]>([]);
 const accounts = ref<Account[]>([]);
 const pages = ref<Page[]>([]);
 const campaigns = ref<Campaign[]>([]);
@@ -133,28 +129,6 @@ async function loadCampaigns() {
     } finally {
         if (requestId === campaignRequestId) loading.value = false;
     }
-}
-
-async function loadBusinesses() {
-    if (!props.canManage || !connected.value) return;
-    try {
-        const response = await fetch('/crm/meta/businesses', {
-            headers: { Accept: 'application/json' },
-        });
-        if (!response.ok)
-            throw new Error(
-                (await response.json()).message ||
-                    'No se pudieron consultar los Business Managers.',
-            );
-        businesses.value = (await response.json()).data;
-    } catch (cause) {
-        error.value =
-            cause instanceof Error ? cause.message : 'Meta no respondió.';
-    }
-}
-
-function selectBusiness() {
-    businessForm.post('/crm/meta/business');
 }
 
 function linkAccount(account: Account) {
@@ -261,7 +235,6 @@ function importLeads() {
 
 onMounted(() => {
     if (page.props.errors?.meta) error.value = String(page.props.errors.meta);
-    void loadBusinesses();
     void loadAssets();
 });
 </script>
@@ -289,77 +262,9 @@ onMounted(() => {
         {{ error }}
     </p>
 
-    <section
-        v-if="canManage"
-        class="mb-6 rounded-xl border border-slate-200 bg-white p-6"
-    >
-        <h2 class="text-lg font-semibold">Business Manager de Meta</h2>
-        <p class="mt-1 text-sm text-slate-500">
-            Conecta Meta para elegir cuentas publicitarias. El Business Manager
-            se usa para vincular páginas y sus leads.
-        </p>
-        <p
-            v-if="businessName"
-            class="mt-3 text-sm font-medium text-emerald-700"
-        >
-            Conectado a {{ businessName }}
-        </p>
-        <p v-if="!metaConfigured" class="mt-3 text-sm text-amber-700">
-            Falta configurar la app de Meta en el servidor.
-        </p>
-        <a
-            v-else
-            href="/crm/meta/oauth/redirect"
-            class="mt-4 inline-block rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white"
-        >
-            {{ connected ? 'Reconectar con Meta' : 'Iniciar sesión con Meta' }}
-        </a>
-        <form
-            v-if="connected && businesses.length"
-            class="mt-4 flex flex-wrap items-end gap-3"
-            @submit.prevent="selectBusiness"
-        >
-            <label class="text-sm"
-                >Business Manager
-                <select
-                    v-model="businessForm.business_id"
-                    required
-                    class="mt-1 block rounded-lg border border-slate-300 px-3 py-2"
-                >
-                    <option value="">Selecciona un negocio</option>
-                    <option
-                        v-for="business in businesses"
-                        :key="business.id"
-                        :value="business.id"
-                    >
-                        {{ business.name }}
-                    </option>
-                </select>
-            </label>
-            <button
-                type="submit"
-                :disabled="businessForm.processing"
-                class="rounded-lg bg-cyan-700 px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
-            >
-                {{ businessName ? 'Cambiar negocio' : 'Conectar negocio' }}
-            </button>
-        </form>
-        <p
-            v-if="connected && !businessName && businesses.length === 0"
-            class="mt-3 text-sm text-slate-500"
-        >
-            No se encontraron Business Managers disponibles para esta cuenta.
-        </p>
-        <p
-            v-if="businessForm.errors.business_id"
-            class="mt-2 text-sm text-red-600"
-        >
-            {{ businessForm.errors.business_id }}
-        </p>
-    </section>
     <NexusEmptyState
         v-if="!connected"
-        description="El administrador de la empresa debe conectar Meta para consultar campañas."
+        description="El administrador de la empresa debe conectar Meta en Configuración para consultar campañas."
     />
 
     <template v-if="connected">

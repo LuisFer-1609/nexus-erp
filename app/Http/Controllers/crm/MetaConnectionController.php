@@ -33,7 +33,7 @@ class MetaConnectionController extends Controller
         try {
             return redirect()->away($oauth->authorizationUrl($state));
         } catch (RuntimeException $exception) {
-            return redirect()->route('crm.campanas')->withErrors(['meta' => $exception->getMessage()]);
+            return redirect()->route('crm.configuracion')->withErrors(['meta' => $exception->getMessage()]);
         }
     }
 
@@ -49,7 +49,7 @@ class MetaConnectionController extends Controller
             && (int) ($pending['created_at'] ?? 0) > now()->subMinutes(10)->timestamp, 403);
 
         if ($request->has('error')) {
-            return redirect()->route('crm.campanas')->withErrors(['meta' => 'Se canceló la autorización de Meta.']);
+            return redirect()->route('crm.configuracion')->withErrors(['meta' => 'Se canceló la autorización de Meta.']);
         }
         $code = $request->query('code');
         abort_unless(is_string($code) && $code !== '', 400);
@@ -58,16 +58,16 @@ class MetaConnectionController extends Controller
             $credentials = $oauth->exchange($code);
             $meta->businesses($credentials['access_token']);
         } catch (Throwable) {
-            return redirect()->route('crm.campanas')->withErrors(['meta' => 'No se pudo completar la conexión. Revisa los permisos de la app en Meta.']);
+            return redirect()->route('crm.configuracion')->withErrors(['meta' => 'No se pudo completar la conexión. Revisa los permisos de la app en Meta.']);
         }
 
         $companyId = $access->companyId($request);
         $fingerprint = hash('sha256', $credentials['access_token']);
         if (MetaConnection::query()->where('token_fingerprint', $fingerprint)->where('company_id', '!=', $companyId)->exists()) {
-            return redirect()->route('crm.campanas')->withErrors(['meta' => 'Esta cuenta de Meta ya está conectada a otra empresa.']);
+            return redirect()->route('crm.configuracion')->withErrors(['meta' => 'Esta cuenta de Meta ya está conectada a otra empresa.']);
         }
         if (MetaConnection::query()->where('token_fingerprint', $fingerprint)->where('auth_user_id', '!=', $request->user()->id)->exists()) {
-            return redirect()->route('crm.campanas')->withErrors(['meta' => 'Esta cuenta de Meta ya está conectada por otro administrador.']);
+            return redirect()->route('crm.configuracion')->withErrors(['meta' => 'Esta cuenta de Meta ya está conectada por otro administrador.']);
         }
 
         DB::transaction(function () use ($request, $companyId, $credentials, $fingerprint) {
@@ -90,7 +90,7 @@ class MetaConnectionController extends Controller
             );
         });
 
-        return redirect()->route('crm.campanas')->with('success', 'Meta autorizó tu cuenta. Elige tu Business Manager.');
+        return redirect()->route('crm.configuracion')->with('success', 'Meta autorizó tu cuenta. Elige tu Business Manager.');
     }
 
     public function businesses(Request $request, MetaAccess $access, MetaReadService $meta): JsonResponse

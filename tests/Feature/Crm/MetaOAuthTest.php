@@ -80,7 +80,7 @@ test('a company administrator chooses an ad account independently of the selecte
 
     $this->actingAs($admin)->get('/crm/meta/oauth/callback?'.http_build_query([
         'state' => $query['state'], 'code' => 'valid-code',
-    ]))->assertRedirect(route('crm.campanas'))->assertSessionHasNoErrors();
+    ]))->assertRedirect(route('crm.configuracion'))->assertSessionHasNoErrors();
 
     $connection = MetaConnection::query()->where('auth_user_id', $admin->id)->firstOrFail();
     expect($connection->company_id)->toBe($admin->company_id)
@@ -191,7 +191,7 @@ test('two administrators of one company can maintain separate Meta connections',
         parse_str(parse_url($redirect->headers->get('Location'), PHP_URL_QUERY), $query);
         $this->actingAs($admin)->get('/crm/meta/oauth/callback?'.http_build_query([
             'state' => $query['state'], 'code' => $code,
-        ]))->assertRedirect(route('crm.campanas'))->assertSessionHasNoErrors();
+        ]))->assertRedirect(route('crm.configuracion'))->assertSessionHasNoErrors();
     }
 
     expect(MetaConnection::query()->where('company_id', $first->company_id)->count())->toBe(2)
