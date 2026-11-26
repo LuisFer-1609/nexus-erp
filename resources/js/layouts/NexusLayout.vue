@@ -82,7 +82,6 @@ const navSections: NavSection[] = [
             { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
             { label: 'Leads', href: '/crm/leads', icon: Contact },
             { label: 'Clientes', href: '/crm/clientes', icon: Users },
-            { label: 'Asistente IA', href: '/crm/asistente', icon: Bot },
             {
                 label: 'Configuración',
                 href: '/crm/configuracion',
