@@ -11,6 +11,7 @@ use App\Models\Nexus\PayrollDetail;
 use App\Models\Nexus\PayrollFrequency;
 use App\Models\Nexus\PayrollPeriod;
 use App\Models\Nexus\Position;
+use App\Models\Nexus\User as NexusUser;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 
@@ -442,16 +443,16 @@ class PreNominaService
         try {
             $areaMap = Area::query()->whereNull(Area::DELETED_AT)->pluck(Area::NAME, Area::ID)->all();
             $positionMap = Position::query()->whereNull(Position::DELETED_AT)->pluck(Position::NAME, Position::ID)->all();
-            $employees = Employee::query()->whereNull(Employee::DELETED_AT)->get();
+            $employees = Employee::query()->with('user')->whereNull(Employee::DELETED_AT)->get();
 
             $list = [];
             foreach ($employees as $emp) {
-                $firstName = (string) $emp->getAttribute(Employee::FIRST_NAME);
-                $lastName = (string) $emp->getAttribute(Employee::LAST_NAME);
+                $firstName = (string) ($emp->user->getAttribute(NexusUser::NAME) ?? '');
+                $lastName = (string) ($emp->user->getAttribute(NexusUser::LAST_NAME) ?? '');
                 $fullName = trim($firstName.' '.$lastName);
                 $areaId = (int) $emp->getAttribute(Employee::AREA_ID);
                 $positionId = (int) $emp->getAttribute(Employee::POSITION_ID);
-                $isActive = (bool) $emp->getAttribute(Employee::IS_ACTIVE);
+                $isActive = (string) $emp->getAttribute(Employee::STATUS) === 'activo';
 
                 $list[] = [
                     'id' => (int) $emp->getAttribute(Employee::ID),
@@ -459,10 +460,10 @@ class PreNominaService
                     'name' => $fullName,
                     'area' => (string) ($areaMap[$areaId] ?? 'General'),
                     'role' => (string) ($positionMap[$positionId] ?? 'Colaborador'),
-                    'contact' => (string) ($emp->getAttribute(Employee::PHONE) ?? '—'),
-                    'date' => (string) ($emp->getAttribute(Employee::HIRE_DATE) ?? '—'),
+                    'contact' => (string) ($emp->user->getAttribute(NexusUser::PHONE) ?? '—'),
+                    'date' => $emp->hire_date?->toDateString() ?? '—',
                     'status' => $isActive ? 'Activo' : 'Inactivo',
-                    'schedule' => '08:00–17:00',
+                    'schedule' => '09:00–18:00',
                 ];
             }
 

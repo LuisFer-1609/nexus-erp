@@ -3,12 +3,14 @@
 namespace App\Models\Nexus;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * Modelo de la tabla `payroll_frequencies`.
  */
 class PayrollFrequency extends Model
 {
+    use SoftDeletes;
     /** Nombre de la tabla. */
     public const TABLE = 'payroll_frequencies';
 
@@ -35,6 +37,22 @@ class PayrollFrequency extends Model
     protected $table = self::TABLE;
 
     protected $primaryKey = self::ID;
+
+    protected $fillable = [
+        self::CODE,
+        self::NAME,
+        self::DAYS,
+        self::CREATED_USER_ID,
+        self::UPDATED_USER_ID,
+        self::DELETED_USER_ID,
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            self::DAYS => 'integer',
+        ];
+    }
 
     public $timestamps = true;
 }

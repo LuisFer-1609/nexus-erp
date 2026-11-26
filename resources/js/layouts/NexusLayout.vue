@@ -3,17 +3,23 @@ import { Link, usePage } from '@inertiajs/vue3';
 import {
     Bell,
     Bot,
+    Briefcase,
     Building2,
+    Calendar,
     ChevronDown,
     ChevronLeft,
     ChevronRight,
     Clock3,
     Contact,
+    Globe,
+    Layers,
     LayoutDashboard,
+    ListChecks,
     Menu,
     Search,
     Settings,
     Smartphone,
+    Store,
     UserRound,
     Users,
     WalletCards,
@@ -102,6 +108,36 @@ const navSections: NavSection[] = [
                 icon: Clock3,
             },
             { label: 'Pre-nómina', href: '/pre-nomina', icon: WalletCards },
+            {
+                label: 'Áreas',
+                href: '/pre-nomina/catalogos/areas',
+                icon: Layers,
+            },
+            {
+                label: 'Puestos',
+                href: '/pre-nomina/catalogos/puestos',
+                icon: Briefcase,
+            },
+            {
+                label: 'Frecuencias',
+                href: '/pre-nomina/catalogos/frecuencias',
+                icon: Calendar,
+            },
+            {
+                label: 'Conceptos',
+                href: '/pre-nomina/catalogos/conceptos',
+                icon: ListChecks,
+            },
+            {
+                label: 'Nacionalidades',
+                href: '/pre-nomina/catalogos/nacionalidades',
+                icon: Globe,
+            },
+            {
+                label: 'Tipos de negocio',
+                href: '/pre-nomina/catalogos/tipos-negocio',
+                icon: Store,
+            },
         ],
     },
     {
@@ -125,6 +161,12 @@ const routeOrder = [
     '/pre-nomina/empleados',
     '/pre-nomina/asistencias',
     '/pre-nomina',
+    '/pre-nomina/catalogos/areas',
+    '/pre-nomina/catalogos/puestos',
+    '/pre-nomina/catalogos/frecuencias',
+    '/pre-nomina/catalogos/conceptos',
+    '/pre-nomina/catalogos/nacionalidades',
+    '/pre-nomina/catalogos/tipos-negocio',
 ];
 
 watch(currentPath, (newPath, oldPath) => {

@@ -3,12 +3,14 @@
 namespace App\Models\Nexus;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * Modelo de la tabla `business_types`.
  */
 class BusinessType extends Model
 {
+    use SoftDeletes;
     /** Nombre de la tabla. */
     public const TABLE = 'business_types';
 
@@ -35,6 +37,15 @@ class BusinessType extends Model
     protected $table = self::TABLE;
 
     protected $primaryKey = self::ID;
+
+    protected $fillable = [
+        self::CODE,
+        self::NAME,
+        self::DESCRIPCION,
+        self::CREATED_USER_ID,
+        self::UPDATED_USER_ID,
+        self::DELETED_USER_ID,
+    ];
 
     public $timestamps = true;
 }
